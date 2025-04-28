@@ -1,0 +1,42 @@
+<svg width="70" height="60" viewBox="0 0 93 89" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- 1. Outer Heptagon Stroke -->
+  <path d="M66.8111 12.2471L85.8476 50.6104C88.6708 56.2998 86.2436 62.9784 80.4263 65.5275L41.8338 82.4387C36.0165 84.9878 29.0121 82.4422 26.189 76.7529L7.15241 38.3896C4.32926 32.7003 6.75647 26.0217 12.5737 23.4725L51.1662 6.56131C56.9835 4.01218 63.9879 6.55782 66.8111 12.2471Z"
+        stroke="#78D5A9" <!-- Outline Color -->
+        stroke-width="3"/>
+
+  <!-- 2. Rotated Background Rectangle -->
+  <rect width="63.0788" height="61.7372" rx="13"
+        transform="matrix(0.716676 0.697406 -0.740533 0.67202 47.2654 1.50847)"
+        fill="#241C3C"/> <!-- Background Color -->
+
+  <!-- 3. Your Initials "RA" (Basic Placeholder) -->
+  <g filter="url(#filter_RA)">
+    <!-- == PASTE YOUR CUSTOM 'RA' PATH DATA HERE == -->
+    <path d="M41.23 58.66V31.34H46.75C48.73 31.34 50.1633 31.8333 51.05 32.82C51.95 33.7933 52.4 35.2 52.4 37.04C52.4 38.7867 51.9567 40.1933 51.07 41.26C50.1967 42.3133 48.8233 42.84 46.95 42.84H43.87V58.66H41.23ZM43.87 40.6H46.29C47.27 40.6 47.9833 40.34 48.43 39.82C48.89 39.2867 49.12 38.4867 49.12 37.42C49.12 36.4467 48.89 35.6933 48.43 35.16C47.9833 34.6133 47.3 34.34 46.38 34.34H43.87V40.6Z M49.88 58.66L55.06 47.52H50.6L55.6 58.66H53.08L49.88 52.26V58.66H47.24V47.52L52.42 58.66H49.88Z"
+          fill="#78D5A9"/> <!-- Letter Color -->
+     <!-- NOTE: The path 'd' above is a *very basic* placeholder for "RA".
+                Replace it with path data generated from a vector editor. -->
+  </g>
+
+  <!-- 4. Definition for the Inner Shadow Filter -->
+  <defs>
+    <filter id="filter_RA"
+            x="37.23" <!-- UPDATE if you change path data -->
+            y="27.34" <!-- UPDATE if you change path data -->
+            width="22.37" <!-- UPDATE if you change path data -->
+            height="39.32" <!-- UPDATE if you change path data -->
+            filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+       <!-- Filter settings (same as original example) -->
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="4"/>
+      <feGaussianBlur stdDeviation="2"/>
+      <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+      <feBlend mode="normal" in2="shape" result="effect1_innerShadow"/>
+    </filter>
+  </defs>
+
+</svg>
