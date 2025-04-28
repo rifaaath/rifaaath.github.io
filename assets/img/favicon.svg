@@ -2,7 +2,7 @@
 
   <!-- 1. Outer Heptagon Stroke -->
   <path d="M66.8111 12.2471L85.8476 50.6104C88.6708 56.2998 86.2436 62.9784 80.4263 65.5275L41.8338 82.4387C36.0165 84.9878 29.0121 82.4422 26.189 76.7529L7.15241 38.3896C4.32926 32.7003 6.75647 26.0217 12.5737 23.4725L51.1662 6.56131C56.9835 4.01218 63.9879 6.55782 66.8111 12.2471Z"
-        stroke="#78D5A9" <!-- Outline Color -->
+        stroke="#78D5A9" 
         stroke-width="3"/>
 
   <!-- 2. Rotated Background Rectangle -->
@@ -22,10 +22,10 @@
   <!-- 4. Definition for the Inner Shadow Filter -->
   <defs>
     <filter id="filter_RA"
-            x="37.23" <!-- UPDATE if you change path data -->
-            y="27.34" <!-- UPDATE if you change path data -->
-            width="22.37" <!-- UPDATE if you change path data -->
-            height="39.32" <!-- UPDATE if you change path data -->
+            x="37.23" 
+            y="27.34" 
+            width="22.37" 
+            height="39.32" 
             filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
        <!-- Filter settings (same as original example) -->
       <feFlood flood-opacity="0" result="BackgroundImageFix"/>
