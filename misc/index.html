@@ -498,7 +498,7 @@
         }
 
         /* When a section is active, move clock to the left - ONLY WHEN PANEL IS SHOWN */
-        .header-container.section-active {
+        /* .header-container.section-active {
             transform: translateX(-25%);
         }
         .clock-container.section-active {
@@ -506,7 +506,7 @@
         }
         .status-container.section-active {
             transform: translateX(-25%);
-        }
+        } */
 
 
 
@@ -582,11 +582,13 @@
             }
 
             .hour-mark {
-                transform-origin: 1.5px 125px;
+                top: -2%;
+                transform-origin: 1px 115px;
             }
 
             .minute-mark {
-                transform-origin: 1px 125px;
+                top: -2%;
+                transform-origin: 1px 115px;
             }
 
             .hour-hand {
@@ -669,7 +671,7 @@
         </div>
         
         <!-- Navigation and content sections -->
-        <!-- <div class="nav-panel">
+        <div class="nav-panel">
             <button class="nav-btn" data-section="home">Home</button>
             <button class="nav-btn" data-section="location">Route to Get</button>
             <button class="nav-btn" data-section="times">Prayer Times</button>
@@ -715,7 +717,7 @@
                     </div>
                 </div>
             </section>
-        </div> -->
+        </div>
     </div>
 
     <script>
