@@ -194,7 +194,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (scrapedDateText) {
       displayGregorianDate = scrapedDateText; 
       try {
-        const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d. MMM yyyy', new Date());
+        const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d MMM yyyy', new Date());
         if (parsedDateAttempt instanceof Date && !isNaN(parsedDateAttempt.getTime())) {
           dateToParseTimesFor = parsedDateAttempt;
         } else {
