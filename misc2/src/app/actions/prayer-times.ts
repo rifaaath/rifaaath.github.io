@@ -3,8 +3,7 @@
 
 import { format, addMinutes, differenceInMinutes, parse, set, addDays } from 'date-fns';
 import * as cheerio from 'cheerio';
-import puppeteer, {Browser} from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer';
 
 export interface PrayerTime {
   name: string;
@@ -41,7 +40,6 @@ function parsePrayerTime(timeStr: string, baseDate: Date): Date | null {
     return null;
   }
 
-  // Time is always expected in HH:mm format
   const timePart = timeStr.trim();
 
   if (!timePart || !timePart.includes(':')) {
@@ -129,49 +127,10 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     let hijriDateDisplay: string | undefined;
     let dateToParseTimesFor: Date = serverTimeNow;
       
-    let executablePath: string | undefined = process.env.PUPPETEER_EXECUTABLE_PATH;
-
-    if (process.env.VERCEL) {
-      console.log("Vercel environment detected. Using @sparticuz/chromium.");
-      executablePath = await chromium.executablePath();
-    } else {
-      console.log("Local environment detected. Attempting to use @sparticuz/chromium executable.");
-      try {
-        const localChromiumPath = await chromium.executablePath();
-        if (localChromiumPath) {
-          executablePath = localChromiumPath;
-          console.log("Using @sparticuz/chromium executable for local development:", executablePath);
-        } else {
-          console.warn("No executablePath from @sparticuz/chromium locally. Will check PUPPETEER_EXECUTABLE_PATH.");
-          if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-            console.log("Using PUPPETEER_EXECUTABLE_PATH for local development:", executablePath);
-          } else {
-            console.warn("No PUPPETEER_EXECUTABLE_PATH set. Puppeteer will attempt to find a system browser.");
-          }
-        }
-      } catch (e: any) {
-        console.warn("Could not get executable path from @sparticuz/chromium locally:", e.message);
-        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-          executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-          console.log("Falling back to PUPPETEER_EXECUTABLE_PATH for local development:", executablePath);
-        } else {
-          console.warn("No PUPPETEER_EXECUTABLE_PATH set. Puppeteer will attempt to find a system browser.");
-        }
-      }
-    }
-    
     const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        headless: true, 
+        headless: true, // Use "new" headless mode for modern Puppeteer
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Common args for server environments
     };
-
-    if (executablePath) {
-        launchOptions.executablePath = executablePath;
-    } else {
-       console.warn("Launching Puppeteer without an explicit executablePath. This might fail if a suitable browser is not found or configured.");
-    }
     
     console.log("Attempting to launch Puppeteer with options:", JSON.stringify(launchOptions, null, 2));
     try {
@@ -183,21 +142,34 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     console.log("Puppeteer launched successfully.");
     
     const page = await browser.newPage();
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      if (['image', 'stylesheet', 'font', 'media'].includes(request.resourceType())) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
+    
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1280, height: 720 });
     
     console.log("Navigating to Mawaqit URL with Puppeteer:", MAWAQIT_URL);
     try {
-      await page.goto(MAWAQIT_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(MAWAQIT_URL, { waitUntil: 'domcontentloaded', timeout: 45000 }); 
     } catch (gotoError: any) {
       console.error("Puppeteer page.goto failed:", gotoError.message, gotoError.stack);
+      await browser.close();
       return createErrorFallbackData(`Puppeteer navigation failed: ${gotoError.message}`, serverTimeNow);
     }
     console.log("Navigation successful.");
     
     try {
-      // Wait for a known prayer time element to ensure JS has loaded the times.
-      await page.waitForSelector('div.prayers .time div', { timeout: 15000 });
+      await page.waitForSelector('div.prayers .time div', { timeout: 20000 }); 
+      console.log("Main prayer time selector found.");
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      console.log("Short delay after waitForSelector complete.");
     } catch (selectorError) {
       console.warn("waitForSelector for prayer times timed out. Page content might be incomplete or structure changed.");
       const contentCheck = await page.content();
@@ -214,7 +186,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (scrapedDateText) {
       displayGregorianDate = scrapedDateText; 
       try {
-        const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d. MMM yyyy', new Date());
+        const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d MMM yyyy', new Date());
         if (parsedDateAttempt instanceof Date && !isNaN(parsedDateAttempt.getTime())) {
           dateToParseTimesFor = parsedDateAttempt;
         } else {
@@ -258,10 +230,10 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (rawPrayerTimes.length === 0) {
       console.warn('No prayer times were successfully parsed. Page structure might have changed, selector issue, or no times listed on page.');
       if (!htmlContent.includes('prayer')) { 
+         await browser.close();
          return createErrorFallbackData("Failed to find prayer times on the page. Content might be missing or selectors outdated.", serverTimeNow);
       }
     }
-
 
     const displayTimes = rawPrayerTimes.map(pt => ({ name: pt.name, time: pt.time }));
     let nextPrayerInfo: PrayerTimesData['nextPrayer'] = null;
@@ -269,6 +241,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
 
     if (!(serverTimeNow instanceof Date) || isNaN(serverTimeNow.getTime())) {
         console.error("Critical: serverTimeNow is invalid. This should not happen.");
+        await browser.close();
         return createErrorFallbackData("Internal error with server's current time.", new Date());
     }
 
@@ -294,7 +267,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
         }
       }
 
-      if (serverTimeNow < prayer.dateTime && !nextPrayerInfo) { 
+      if (prayer.name !== 'Sunrise' && serverTimeNow < prayer.dateTime && !nextPrayerInfo) { 
         const diffMinutes = differenceInMinutes(prayer.dateTime, serverTimeNow);
         if (diffMinutes >= 0) { 
             const hoursUntil = Math.floor(diffMinutes / 60);
@@ -314,9 +287,12 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     }
 
     if (!nextPrayerInfo && rawPrayerTimes.length > 0) {
-      const fajrPrayerToday = rawPrayerTimes.find(p => p.name === 'Fajr' && p.dateTime instanceof Date && !isNaN(p.dateTime.getTime()));
-      if (fajrPrayerToday && fajrPrayerToday.dateTime) {
-        const fajrForCalculation = serverTimeNow > fajrPrayerToday.dateTime ? addDays(fajrPrayerToday.dateTime, 1) : fajrPrayerToday.dateTime;
+      const fajrPrayerDefinition = rawPrayerTimes.find(p => p.name === 'Fajr');
+      if (fajrPrayerDefinition && fajrPrayerDefinition.dateTime) {
+        let fajrForCalculation = fajrPrayerDefinition.dateTime;
+        if (serverTimeNow > fajrPrayerDefinition.dateTime) {
+          fajrForCalculation = addDays(fajrPrayerDefinition.dateTime, 1);
+        }
         
         const diffMinutes = differenceInMinutes(fajrForCalculation, serverTimeNow);
 
@@ -333,8 +309,8 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
           }
 
           nextPrayerInfo = {
-            name: fajrPrayerToday.name, 
-            time: fajrPrayerToday.time, 
+            name: fajrPrayerDefinition.name, 
+            time: fajrPrayerDefinition.time, 
             dateTime: fajrForCalculation, 
             timeUntil: `${timeUntilStr.trim()}${label}`,
           };
@@ -342,6 +318,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
       }
     }
 
+    await browser.close();
     return {
       date: displayGregorianDate,
       hijriDate: hijriDateDisplay,
@@ -352,10 +329,14 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
 
   } catch (unexpectedError: any) {
     console.error("An unexpected server error occurred in getPrayerTimes:", unexpectedError.message, unexpectedError.stack);
+    if (browser) {
+      console.log("Closing Puppeteer browser due to unexpected error.");
+      await browser.close(); 
+    }
     return createErrorFallbackData(`An unexpected server error occurred: ${unexpectedError.message}`, new Date());
   } finally {
-    if (browser) {
-      console.log("Closing Puppeteer browser.");
+    if (browser && browser.process() != null) { // Check if browser is still connected
+      console.log("Closing Puppeteer browser in finally block.");
       await browser.close();
     }
   }
