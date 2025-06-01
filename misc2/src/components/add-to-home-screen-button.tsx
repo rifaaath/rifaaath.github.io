@@ -56,7 +56,7 @@ export default function AddToHomeScreenButton() {
               <Button
                 variant={iconPreference === 'default' ? 'default' : 'outline'}
                 onClick={() => handleSelect('default')}
-                className="flex-1 justify-start items-center p-4 h-auto"
+                className="w-full flex-1 justify-start items-center p-5 h-auto"
               >
                 <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border">
                   <Image src={defaultIconPreview} alt="Default Icon Preview" layout="fill" objectFit="cover" data-ai-hint="logo icon" />
@@ -70,7 +70,7 @@ export default function AddToHomeScreenButton() {
               <Button
                 variant={iconPreference === 'alternative' ? 'default' : 'outline'}
                 onClick={() => handleSelect('alternative')}
-                className="flex-1 justify-start items-center p-4 h-auto"
+                className="w-full flex-1 justify-start items-center p-5 h-auto"
               >
                 <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border">
                   <Image src={alternativeIconPreview} alt="Alternative Icon Preview" layout="fill" objectFit="cover" data-ai-hint="logo icon alternative"/>
