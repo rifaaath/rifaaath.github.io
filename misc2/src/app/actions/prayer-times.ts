@@ -3,7 +3,10 @@
 
 import { format, addMinutes, differenceInMinutes, parse, set, addDays } from 'date-fns';
 import * as cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
+// Import types for Browser. Explicit imports for puppeteer and puppeteer-core for clarity.
+import type { Browser as PuppeteerBrowser } from 'puppeteer';
+import type { Browser as PuppeteerCoreBrowser } from 'puppeteer-core';
+import chromium from "@sparticuz/chromium-min";
 
 export interface PrayerTime {
   name: string;
@@ -58,12 +61,12 @@ function parsePrayerTime(timeStr: string, baseDate: Date): Date | null {
   const minutes = parseInt(minutesStr, 10);
 
   if (isNaN(hours) || isNaN(minutes)) {
-    console.warn("parsePrayerTime: Failed to parse hour/minute numbers for: \"" + String(timeStr) + "\" (parsed hours=" + hours + ", parsed minutes=" + minutes + ")");
+    console.warn("parsePrayerTime: Failed to parse hour/minute numbers for: " + String(timeStr) + " (parsed hours=" + hours + ", parsed minutes=" + minutes + ")");
     return null;
   }
 
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-    console.warn("parsePrayerTime: Hour/minute out of range for 24h format: \"" + String(timeStr) + "\" (hours=" + hours + ", minutes=" + minutes + ")");
+    console.warn("parsePrayerTime: Hour/minute out of range for 24h format: " + String(timeStr) + " (hours=" + hours + ", minutes=" + minutes + ")");
     return null;
   }
 
@@ -118,31 +121,43 @@ function createErrorFallbackData(errorMessage: string, serverTimeNowForFallback:
 
 export async function getPrayerTimes(): Promise<PrayerTimesData> {
   const serverTimeNow = new Date(); 
-  let browser;
+  let browser: PuppeteerBrowser | PuppeteerCoreBrowser | undefined;
   let htmlContent: string;
 
   try {
-    let rawPrayerTimes: PrayerTime[] = [];
-    let displayGregorianDate: string;
-    let hijriDateDisplay: string | undefined;
-    let dateToParseTimesFor: Date = serverTimeNow;
+    console.log("Current environment VERCEL_ENV:", process.env.VERCEL_ENV);
+    if (process.env.VERCEL_ENV === "production") {
+      console.log("Production environment (Vercel) detected. Using puppeteer-core and @sparticuz/chromium-min.");
+      // const chromium = await import("@sparticuz/chromium-min");
+      const puppeteerCore = await import("puppeteer-core");
+      const remoteExecutablePath = "https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar";
       
-    const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
-        headless: true, // Use "new" headless mode for modern Puppeteer
-        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Common args for server environments
-    };
-    
-    console.log("Attempting to launch Puppeteer with options:", JSON.stringify(launchOptions, null, 2));
-    try {
-      browser = await puppeteer.launch(launchOptions);
-    } catch (launchError: any) {
-      console.error("Puppeteer launch failed:", launchError.message, launchError.stack);
-      return createErrorFallbackData(`Puppeteer launch failed: ${launchError.message}`, serverTimeNow);
-    }
-    console.log("Puppeteer launched successfully.");
-    
-    const page = await browser.newPage();
+      const executablePath = await chromium.executablePath(remoteExecutablePath);
+      console.log("Chromium executable path (Vercel):", executablePath);
 
+      if (!executablePath) {
+        throw new Error("Failed to get executable path from @sparticuz/chromium-min");
+      }
+
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        executablePath,
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true, // Important for some sites
+      });
+      console.log("Puppeteer-core browser launched on Vercel.");
+    } else {
+      console.log("Local development environment detected. Using full puppeteer.");
+      const puppeteer = await import("puppeteer");
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        ignoreHTTPSErrors: true,
+      });
+      console.log("Full puppeteer browser launched locally.");
+    }
+      
+    const page = await browser.newPage();
     await page.setRequestInterception(true);
     page.on('request', (request) => {
       if (['image', 'stylesheet', 'font', 'media'].includes(request.resourceType())) {
@@ -155,12 +170,11 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1280, height: 720 });
     
-    console.log("Navigating to Mawaqit URL with Puppeteer:", MAWAQIT_URL);
+    console.log("Navigating to Mawaqit URL:", MAWAQIT_URL);
     try {
       await page.goto(MAWAQIT_URL, { waitUntil: 'domcontentloaded', timeout: 45000 }); 
     } catch (gotoError: any) {
       console.error("Puppeteer page.goto failed:", gotoError.message, gotoError.stack);
-      await browser.close();
       return createErrorFallbackData(`Puppeteer navigation failed: ${gotoError.message}`, serverTimeNow);
     }
     console.log("Navigation successful.");
@@ -174,18 +188,24 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
       console.warn("waitForSelector for prayer times timed out. Page content might be incomplete or structure changed.");
       const contentCheck = await page.content();
       if (!contentCheck.includes("prayer")) { 
-          console.error("Essential prayer content not found on the page via Puppeteer after timeout.");
+          console.error("Essential prayer content not found on the page after timeout.");
       }
     }
     
     htmlContent = await page.content();
+    await page.close(); // Close page once content is fetched
 
     const $ = cheerio.load(htmlContent);
+    let rawPrayerTimes: PrayerTime[] = [];
+    let displayGregorianDate: string;
+    let hijriDateDisplay: string | undefined;
+    let dateToParseTimesFor: Date = serverTimeNow;
 
     const scrapedDateText = $('#gregorianDate').text().trim();
     if (scrapedDateText) {
       displayGregorianDate = scrapedDateText; 
       try {
+        // Expected format: EEEE, d. MMM yyyy (e.g., Sunday, 1. Jun 2025)
         const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d MMM yyyy', new Date());
         if (parsedDateAttempt instanceof Date && !isNaN(parsedDateAttempt.getTime())) {
           dateToParseTimesFor = parsedDateAttempt;
@@ -230,7 +250,6 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (rawPrayerTimes.length === 0) {
       console.warn('No prayer times were successfully parsed. Page structure might have changed, selector issue, or no times listed on page.');
       if (!htmlContent.includes('prayer')) { 
-         await browser.close();
          return createErrorFallbackData("Failed to find prayer times on the page. Content might be missing or selectors outdated.", serverTimeNow);
       }
     }
@@ -241,7 +260,6 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
 
     if (!(serverTimeNow instanceof Date) || isNaN(serverTimeNow.getTime())) {
         console.error("Critical: serverTimeNow is invalid. This should not happen.");
-        await browser.close();
         return createErrorFallbackData("Internal error with server's current time.", new Date());
     }
 
@@ -317,8 +335,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
         }
       }
     }
-
-    await browser.close();
+    
     return {
       date: displayGregorianDate,
       hijriDate: hijriDateDisplay,
@@ -329,13 +346,9 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
 
   } catch (unexpectedError: any) {
     console.error("An unexpected server error occurred in getPrayerTimes:", unexpectedError.message, unexpectedError.stack);
-    if (browser) {
-      console.log("Closing Puppeteer browser due to unexpected error.");
-      await browser.close(); 
-    }
     return createErrorFallbackData(`An unexpected server error occurred: ${unexpectedError.message}`, new Date());
   } finally {
-    if (browser && browser.process() != null) { // Check if browser is still connected
+    if (browser) {
       console.log("Closing Puppeteer browser in finally block.");
       await browser.close();
     }
