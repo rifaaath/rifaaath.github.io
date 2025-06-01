@@ -10,7 +10,21 @@ interface IconPreferenceContextType {
   setIconPreference: (preference: IconPreference) => void;
 }
 
-const IconPreferenceContext = createContext<IconPreferenceContextType | undefined>(undefined);
+// Define a default context value to be used when no provider is found
+// or during build-time rendering before client-side hydration.
+const defaultContextValue: IconPreferenceContextType = {
+  iconPreference: 'default',
+  setIconPreference: (preference: IconPreference) => {
+    // This function will be a no-op if called without a provider,
+    // which is fine for SSR/build as preferences are client-side.
+    console.warn(
+      'Attempted to set icon preference when IconPreferenceProvider is not fully initialized (e.g., during SSR/build). Preference: ',
+      preference
+    );
+  },
+};
+
+const IconPreferenceContext = createContext<IconPreferenceContextType>(defaultContextValue);
 
 export const IconPreferenceProvider = ({ children }: { children: ReactNode }) => {
   const [iconPreference, setIconPreferenceState] = useState<IconPreference>('default');
@@ -57,11 +71,6 @@ export const IconPreferenceProvider = ({ children }: { children: ReactNode }) =>
     setIconPreferenceState(preference);
   };
   
-  // Removed the problematic block:
-  // if (!isMounted) {
-  //     return null; 
-  // }
-
   return (
     <IconPreferenceContext.Provider value={{ iconPreference, setIconPreference }}>
       {children}
@@ -71,8 +80,15 @@ export const IconPreferenceProvider = ({ children }: { children: ReactNode }) =>
 
 export const useIconPreference = () => {
   const context = useContext(IconPreferenceContext);
+  // Since createContext now has a default value, context should never be undefined.
+  // The original check `if (context === undefined)` that threw the error can be removed
+  // or kept if you want to distinguish if the *actual* provider is missing vs. using the default.
+  // For build purposes, always returning a valid context (even the default) is key.
   if (context === undefined) {
-    throw new Error('useIconPreference must be used within an IconPreferenceProvider');
+     // This should ideally not be reached if createContext has a default.
+     // If it is, something is fundamentally wrong with React's context mechanism.
+     console.error("Critical: IconPreferenceContext is undefined despite a default value in createContext.");
+     return defaultContextValue; // Fallback to default to prevent crash
   }
   return context;
 };
