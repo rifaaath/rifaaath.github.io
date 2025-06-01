@@ -3,7 +3,8 @@
 
 import { format, addMinutes, differenceInMinutes, parse, set, addDays } from 'date-fns';
 import * as cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from 'chrome-aws-lambda';
 
 
 export interface PrayerTime {
@@ -63,13 +64,12 @@ function parsePrayerTime(timeStr: string, baseDate: Date): Date | null {
     return null;
   }
 
-  // Mawaqit uses 24-hour format primarily from scraping
-  if (!modifier) { // 24-hour format
+  if (!modifier) { 
     if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
       console.warn(`parsePrayerTime: Hour/minute out of range for 24h format: "${timeStr}" (hours=${hours}, minutes=${minutes})`);
       return null;
     }
-  } else { // 12-hour format with AM/PM (mostly for fallback data, or if Mawaqit changes)
+  } else { 
     if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
       console.warn(`parsePrayerTime: Hour/minute out of range for 12h format: "${timeStr}"`);
       return null;
@@ -77,7 +77,7 @@ function parsePrayerTime(timeStr: string, baseDate: Date): Date | null {
     if (modifier.toUpperCase() === 'PM' && hours < 12) {
       hours += 12;
     }
-    if (modifier.toUpperCase() === 'AM' && hours === 12) { // Midnight case e.g. 12:30 AM should be 00:30
+    if (modifier.toUpperCase() === 'AM' && hours === 12) { 
       hours = 0;
     }
   }
@@ -141,16 +141,42 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     let dateToParseTimesFor: Date = serverTimeNow; 
 
     try {
-      console.log("Launching Puppeteer...");
-      const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'], 
-        headless: true 
-      });
+      console.log("Configuring Puppeteer for Vercel/local...");
+      let browser;
+      if (process.env.VERCEL_ENV) {
+        console.log("Launching Puppeteer with chrome-aws-lambda for Vercel...");
+        browser = await puppeteer.launch({
+          args: chromium.args,
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless,
+          ignoreHTTPSErrors: true,
+        });
+      } else {
+        console.log("Launching Puppeteer with local Chrome/Chromium...");
+        let localExecutablePath;
+        // Attempt to dynamically import 'puppeteer' for local full executable path
+        // This avoids making 'puppeteer' a hard dependency if only 'puppeteer-core' is needed for Vercel
+        // try {
+        //     const {executablePath: getLocalPath} = await import('puppeteer');
+        //     localExecutablePath = getLocalPath();
+        //     console.log("Found local puppeteer executable:", localExecutablePath);
+        // } catch (e) {
+        //     console.warn("Full puppeteer package not found for local executable path. Ensure Chrome/Chromium is in PATH or set executablePath manually if local launch fails.");
+        // }
+
+        browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+            headless: true, 
+            executablePath: localExecutablePath, // May be undefined, puppeteer will try to find Chrome
+        });
+      }
+      
       const page = await browser.newPage();
       console.log(`Navigating to ${MAWAQIT_URL}...`);
-      await page.goto(MAWAQIT_URL, { waitUntil: 'networkidle2', timeout: 30000 }); 
+      await page.goto(MAWAQIT_URL, { waitUntil: 'networkidle0', timeout: 45000 }); 
       
-      await page.waitForSelector('div.prayers .time div', { timeout: 15000 });
+      await page.waitForSelector('div.prayers .time div', { timeout: 20000 });
       console.log("Page content should be loaded. Getting HTML...");
 
       const html = await page.content();
@@ -169,17 +195,17 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
              console.log("Parsed Mawaqit date successfully:", format(dateToParseTimesFor, 'yyyy-MM-dd'));
           } else {
             console.error(`Failed to parse scraped date: "${scrapedDateText}". Falling back to server's current date for prayer time parsing.`);
-            dateToParseTimesFor = new Date(); // Fallback explicitly
+            dateToParseTimesFor = new Date(); 
             displayGregorianDate = `(Scraped Date Invalid: ${scrapedDateText}) ${format(serverTimeNow, 'EEEE, MMMM d, yyyy')}`;
           }
         } catch (e: any) {
             console.error(`Exception during scraped date parsing for "${scrapedDateText}": ${e.message}. Falling back.`);
-            dateToParseTimesFor = new Date(); // Fallback explicitly
+            dateToParseTimesFor = new Date(); 
             displayGregorianDate = `(Scraped Date Exception) ${format(serverTimeNow, 'EEEE, MMMM d, yyyy')}`;
         }
       } else {
         console.warn("Scraped date string is empty. Falling back to server's current date.");
-        dateToParseTimesFor = new Date(); // Fallback explicitly
+        dateToParseTimesFor = new Date(); 
         displayGregorianDate = format(serverTimeNow, 'EEEE, MMMM d, yyyy');
       }
 
@@ -237,8 +263,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
         continue;
       }
 
-      if (prayer.name !== 'Sunrise') { // Sunrise is not a prayer for "current" calculation
-        // Determine end of current prayer: either start of next listed prayer (excluding Sunrise) or a default duration (e.g., 2.5 hours)
+      if (prayer.name !== 'Sunrise') { 
         let nextSalatDateTime: Date | null = null;
         for (let j = i + 1; j < rawPrayerTimes.length; j++) {
             if (rawPrayerTimes[j].name !== 'Sunrise' && rawPrayerTimes[j].dateTime instanceof Date && !isNaN(rawPrayerTimes[j].dateTime.getTime())) {
@@ -246,7 +271,6 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
                 break;
             }
         }
-        // If no next prayer (e.g., for Isha), assume a reasonable duration like 150 minutes (2.5 hours)
         const endCurrentPrayerTime = nextSalatDateTime || addMinutes(prayer.dateTime, 150); 
 
         if (serverTimeNow >= prayer.dateTime && serverTimeNow < endCurrentPrayerTime) {
@@ -254,10 +278,9 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
         }
       }
 
-      // Determine next prayer (can be Sunrise for 'next')
       if (serverTimeNow < prayer.dateTime && !nextPrayerInfo) {
         const diffMinutes = differenceInMinutes(prayer.dateTime, serverTimeNow);
-        if (diffMinutes >= 0) { // Ensure it's actually in the future
+        if (diffMinutes >= 0) { 
             const hoursUntil = Math.floor(diffMinutes / 60);
             const minutesUntil = diffMinutes % 60;
             let timeUntilStr = '';
@@ -267,23 +290,20 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
             nextPrayerInfo = {
                 name: prayer.name,
                 time: prayer.time,
-                dateTime: prayer.dateTime, // Store the actual Date object
+                dateTime: prayer.dateTime, 
                 timeUntil: timeUntilStr.trim(),
             };
         }
       }
     }
 
-    // Handle case where next prayer is Fajr tomorrow
     if (!nextPrayerInfo && rawPrayerTimes.length > 0) {
       const fajrPrayerToday = rawPrayerTimes.find(p => p.name === 'Fajr' && p.dateTime instanceof Date && !isNaN(p.dateTime.getTime()));
       if (fajrPrayerToday && fajrPrayerToday.dateTime) {
-        // Check if current time is after today's Fajr. If so, next Fajr is tomorrow.
-        // Also handles if serverTimeNow is past all prayers today.
         const fajrTomorrowDateTime = addDays(fajrPrayerToday.dateTime, 1);
         const diffMinutes = differenceInMinutes(fajrTomorrowDateTime, serverTimeNow);
 
-        if (diffMinutes >= 0) { // Ensure it's actually in the future
+        if (diffMinutes >= 0) { 
           const hoursUntil = Math.floor(diffMinutes / 60);
           const minutesUntil = diffMinutes % 60;
           let timeUntilStr = '';
@@ -291,9 +311,9 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
           timeUntilStr += `${minutesUntil}m`;
 
           nextPrayerInfo = {
-            name: fajrPrayerToday.name, // Still "Fajr"
-            time: fajrPrayerToday.time, // Show today's Fajr time
-            dateTime: fajrTomorrowDateTime, // Use tomorrow's actual Date object
+            name: fajrPrayerToday.name, 
+            time: fajrPrayerToday.time, 
+            dateTime: fajrTomorrowDateTime, 
             timeUntil: `${timeUntilStr.trim()} (tomorrow)`,
           };
         }
