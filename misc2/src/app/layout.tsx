@@ -1,14 +1,12 @@
 
 import type {Metadata} from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "next-themes";
-import AnimatedBackground from '@/components/animated-background';
+// Removed Toaster, ThemeProvider, AnimatedBackground, IconPreferenceProvider imports as they are in AppProviders
 
 export const metadata: Metadata = {
   title: 'FAU Prayer Room',
   description: 'Prayer room schedule and prayer times for FAU Erlangen-Nürnberg, Technische Fakultät.',
-  manifest: '/manifest.json',
+  manifest: '/manifest.json', // Default manifest
 };
 
 export default function RootLayout({
@@ -16,6 +14,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('[RootLayout] Rendering RootLayout (Server Component)');
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -30,22 +29,12 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="hsl(212 19% 14%)" />
+        <meta name="msapplication-TileColor" content="hsl(212 19% 14%)" /> 
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" media="(prefers-color-scheme: light)" content="hsl(0 0% 98%)" />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="hsl(212 19% 14%)" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AnimatedBackground />
-          {children}
-          <Toaster />
-        </ThemeProvider>
       </body>
     </html>
   );

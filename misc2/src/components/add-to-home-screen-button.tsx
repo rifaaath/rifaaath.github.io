@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Smartphone, Info, CheckCircle, Circle } from 'lucide-react';
+import { Smartphone, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,49 +14,51 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { useIconPreference, IconPreferenceContext } from '@/context/icon-preference-context'; // Import IconPreferenceContext
-import Image from 'next/image';
-import { useEffect } from 'react';
+// IconPreferenceContext and useIconPreference are no longer needed here for UI switching
+// import { useIconPreference, IconPreferenceContext } from '@/context/icon-preference-context';
+// import Image from 'next/image';
+// useEffect is no longer needed here for UI switching
+// import { useEffect } from 'react';
 
 export default function AddToHomeScreenButton() {
-  // Log the imported context object itself
-  console.log('[AddToHomeScreenButton] Imported IconPreferenceContext object:', IconPreferenceContext);
-  
-  const { iconPreference, setIconPreference } = useIconPreference();
-  console.log('[AddToHomeScreenButton] Rendering. Current iconPreference from context:', iconPreference);
+  // const { iconPreference, setIconPreference } = useIconPreference(); // No longer needed for UI switching
+  // console.log('[AddToHomeScreenButton] Rendering. Current iconPreference from context:', iconPreference);
 
-  useEffect(() => {
-    console.log('[AddToHomeScreenButton] Detected change in iconPreference from context. New value:', iconPreference);
-  }, [iconPreference]);
+  // useEffect(() => {
+  //   console.log('[AddToHomeScreenButton] Detected change in iconPreference from context. New value:', iconPreference);
+  // }, [iconPreference]); // No longer needed for UI switching
 
-  const handleSelect = (preference: 'default' | 'alternative') => {
-    console.log('[AddToHomeScreenButton] handleSelect called with:', preference);
-    setIconPreference(preference);
-  };
+  // const handleSelect = (preference: 'default' | 'alternative') => { // No longer needed
+  //   console.log('[AddToHomeScreenButton] handleSelect called with:', preference);
+  //   setIconPreference(preference);
+  // };
 
-  const defaultIconPreview = '/apple-touch-icon.png';
-  const alternativeIconPreview = '/apple-touch-icon-alt.png';
+  // const defaultIconPreview = '/apple-touch-icon.png'; // No longer needed
+  // const alternativeIconPreview = '/apple-touch-icon-alt.png'; // No longer needed
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="bg-card hover:bg-muted text-card-foreground">
           <Smartphone className="mr-2 h-4 w-4" />
-          App Settings
+          Add to Home Screen
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[480px] bg-card border-border text-card-foreground">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center">
-            <Info className="mr-2 h-5 w-5 text-primary" /> App Settings
+            <Info className="mr-2 h-5 w-5 text-primary" /> Add to Home Screen
           </DialogTitle>
           <DialogDescription className="text-muted-foreground pt-1">
-            Configure app icon and learn how to add to your home screen.
+            Follow these instructions to add this application to your home screen for quick access.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-4 text-sm space-y-6 overflow-y-auto max-h-[calc(85vh-12rem)]">
-          <div className="flex flex-col sm:flex-row gap-3">
+        <div className="py-4 text-sm space-y-3 overflow-y-auto max-h-[calc(85vh-10rem)]"> 
+          {/* Icon selection UI removed */}
+          {/* <div className="space-y-2">
+            <p className="font-medium text-card-foreground">Choose App Icon:</p>
+            <div className="flex flex-col sm:flex-row gap-3" key={iconPreference}>
               <Button
                 type="button"
                 variant={iconPreference === 'default' ? 'default' : 'outline'}
@@ -90,10 +92,10 @@ export default function AddToHomeScreenButton() {
             </div>
           </div>
 
-          <Separator className="my-3 bg-border/50" />
+          <Separator className="my-3 bg-border/50" /> */}
 
           <div>
-            <h3 className="font-semibold text-primary mb-2 text-md">Add to Home Screen Instructions</h3>
+            {/* <h3 className="font-semibold text-primary mb-2 text-md">Add to Home Screen Instructions</h3> */}
             <div className="grid gap-4">
               <div>
                 <h4 className="font-medium text-primary mb-1.5">iOS (iPhone/iPad)</h4>
@@ -116,6 +118,7 @@ export default function AddToHomeScreenButton() {
               </div>
             </div>
           </div>
+        </div>
         
         <DialogFooter>
           <DialogClose asChild>
