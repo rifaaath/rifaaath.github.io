@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 
 type IconPreference = 'default' | 'alternative';
 
@@ -10,69 +10,81 @@ interface IconPreferenceContextType {
   setIconPreference: (preference: IconPreference) => void;
 }
 
-// Define a default context value to be used when no provider is found
-// or during build-time rendering before client-side hydration.
 const defaultContextValue: IconPreferenceContextType = {
   iconPreference: 'default',
   setIconPreference: (preference: IconPreference) => {
-    // This function will be a no-op if called without a provider,
-    // which is fine for SSR/build as preferences are client-side.
-    console.warn(
-      'Attempted to set icon preference when IconPreferenceProvider is not fully initialized (e.g., during SSR/build). Preference: ',
-      preference
-    );
+    // This log should ideally not be seen after the provider is properly initialized and consumed.
+    console.log('[IconProvider] DEFAULT CONTEXT setIconPreference CALLED - THIS IS UNEXPECTED POST-INIT. Preference:', preference);
   },
 };
 
-const IconPreferenceContext = createContext<IconPreferenceContextType>(defaultContextValue);
+// Exporting the context object itself for debugging purposes
+export const IconPreferenceContext = createContext<IconPreferenceContextType>(defaultContextValue);
 
 export const IconPreferenceProvider = ({ children }: { children: ReactNode }) => {
   const [iconPreference, setIconPreferenceState] = useState<IconPreference>('default');
   const [isMounted, setIsMounted] = useState(false);
 
+  console.log('[IconProvider] Provider rendering. State - iconPreference:', iconPreference, 'isMounted:', isMounted);
+
   useEffect(() => {
+    console.log('[IconProvider] Mount useEffect started.');
     setIsMounted(true);
     const storedPreference = localStorage.getItem('iconPreference') as IconPreference | null;
+    console.log('[IconProvider] Mount useEffect - Stored preference from localStorage:', storedPreference);
     if (storedPreference) {
+      console.log('[IconProvider] Mount useEffect - Setting preference from localStorage to:', storedPreference);
       setIconPreferenceState(storedPreference);
     }
+    console.log('[IconProvider] Mount useEffect finished.');
+  }, []);
+
+  const setIconPreferenceCallback = useCallback((preference: IconPreference) => {
+    console.log('[IconProvider] setIconPreferenceCallback called with:', preference);
+    setIconPreferenceState(preference);
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    console.log('[IconProvider] iconPreference/isMounted useEffect started. Current iconPreference:', iconPreference, 'isMounted:', isMounted);
+    if (!isMounted) {
+      console.log('[IconProvider] iconPreference/isMounted useEffect: SKIPPING because not mounted yet.');
+      return;
+    }
 
+    console.log('[IconProvider] iconPreference/isMounted useEffect: Updating localStorage and document links for preference:', iconPreference);
     localStorage.setItem('iconPreference', iconPreference);
 
-    // Update manifest link
     let manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
-    if (!manifestLink) {
-      manifestLink = document.createElement('link');
-      manifestLink.rel = 'manifest';
-      document.head.appendChild(manifestLink);
-    }
-    manifestLink.href = iconPreference === 'alternative' ? '/manifest-alt.json' : '/manifest.json';
-
-    // Update apple-touch-icon link
-    let appleTouchIconLink = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
-    if (!appleTouchIconLink) {
-      appleTouchIconLink = document.createElement('link');
-      appleTouchIconLink.rel = 'apple-touch-icon';
-      document.head.appendChild(appleTouchIconLink);
-    }
-    appleTouchIconLink.href = iconPreference === 'alternative' ? '/apple-touch-icon-alt.png' : '/apple-touch-icon.png';
-    if (iconPreference === 'alternative') {
-      appleTouchIconLink.setAttribute('data-ai-hint', 'logo icon alternative');
+    if (manifestLink) {
+        manifestLink.href = iconPreference === 'alternative' ? '/manifest-alt.json' : '/manifest.json';
+        console.log('[IconProvider] Updated manifest link to:', manifestLink.href);
     } else {
-      appleTouchIconLink.setAttribute('data-ai-hint', 'logo icon');
+        console.warn('[IconProvider] Manifest link not found during update.');
     }
+
+    let appleTouchIconLink = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+    if (appleTouchIconLink) {
+        appleTouchIconLink.href = iconPreference === 'alternative' ? '/apple-touch-icon-alt.png' : '/apple-touch-icon.png';
+        console.log('[IconProvider] Updated apple touch icon link to:', appleTouchIconLink.href);
+        if (iconPreference === 'alternative') {
+            appleTouchIconLink.setAttribute('data-ai-hint', 'logo icon alternative');
+        } else {
+            appleTouchIconLink.setAttribute('data-ai-hint', 'logo icon');
+        }
+    } else {
+        console.warn('[IconProvider] Apple touch icon link not found during update.');
+    }
+    console.log('[IconProvider] iconPreference/isMounted useEffect finished. iconPreference state in provider is now:', iconPreference);
   }, [iconPreference, isMounted]);
 
-  const setIconPreference = (preference: IconPreference) => {
-    setIconPreferenceState(preference);
-  };
-  
+  const providerValue = useMemo(() => {
+    console.log('[IconProvider] Recalculating providerValue. Current iconPreference:', iconPreference);
+    return { iconPreference, setIconPreference: setIconPreferenceCallback };
+  }, [iconPreference, setIconPreferenceCallback]);
+
+  console.log('[IconProvider] Returning Provider component with value:', providerValue.iconPreference);
   return (
-    <IconPreferenceContext.Provider value={{ iconPreference, setIconPreference }}>
+    <IconPreferenceContext.Provider value={providerValue}>
       {children}
     </IconPreferenceContext.Provider>
   );
@@ -80,15 +92,6 @@ export const IconPreferenceProvider = ({ children }: { children: ReactNode }) =>
 
 export const useIconPreference = () => {
   const context = useContext(IconPreferenceContext);
-  // Since createContext now has a default value, context should never be undefined.
-  // The original check `if (context === undefined)` that threw the error can be removed
-  // or kept if you want to distinguish if the *actual* provider is missing vs. using the default.
-  // For build purposes, always returning a valid context (even the default) is key.
-  if (context === undefined) {
-     // This should ideally not be reached if createContext has a default.
-     // If it is, something is fundamentally wrong with React's context mechanism.
-     console.error("Critical: IconPreferenceContext is undefined despite a default value in createContext.");
-     return defaultContextValue; // Fallback to default to prevent crash
-  }
+  console.log('[useIconPreference] Context consumed in hook. Current iconPreference in context:', context.iconPreference);
   return context;
 };

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Smartphone, Info, ImageIcon, CheckCircle, Circle } from 'lucide-react';
+import { Smartphone, Info, CheckCircle, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,17 +14,27 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { useIconPreference } from '@/context/icon-preference-context';
+import { useIconPreference, IconPreferenceContext } from '@/context/icon-preference-context'; // Import IconPreferenceContext
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 export default function AddToHomeScreenButton() {
+  // Log the imported context object itself
+  console.log('[AddToHomeScreenButton] Imported IconPreferenceContext object:', IconPreferenceContext);
+  
   const { iconPreference, setIconPreference } = useIconPreference();
+  console.log('[AddToHomeScreenButton] Rendering. Current iconPreference from context:', iconPreference);
+
+  useEffect(() => {
+    console.log('[AddToHomeScreenButton] Detected change in iconPreference from context. New value:', iconPreference);
+  }, [iconPreference]);
 
   const handleSelect = (preference: 'default' | 'alternative') => {
+    console.log('[AddToHomeScreenButton] handleSelect called with:', preference);
     setIconPreference(preference);
   };
 
-  const defaultIconPreview = '/apple-touch-icon.png'; 
+  const defaultIconPreview = '/apple-touch-icon.png';
   const alternativeIconPreview = '/apple-touch-icon-alt.png';
 
   return (
@@ -46,40 +56,36 @@ export default function AddToHomeScreenButton() {
         </DialogHeader>
         
         <div className="py-4 text-sm space-y-6 overflow-y-auto max-h-[calc(85vh-12rem)]">
-          <div>
-            <h3 className="font-semibold text-primary mb-2 text-md">App Icon Preference</h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              Choose the icon for the app when added to your home screen.
-              (Re-add to home screen for changes to take effect).
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
               <Button
+                type="button"
                 variant={iconPreference === 'default' ? 'default' : 'outline'}
                 onClick={() => handleSelect('default')}
-                className="w-full flex-1 justify-start items-center p-5 h-auto"
+                className="w-full sm:flex-1 justify-start items-center p-5 h-auto"
               >
-                <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border">
-                  <Image src={defaultIconPreview} alt="Default Icon Preview" layout="fill" objectFit="cover" data-ai-hint="logo icon" />
+                <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border pointer-events-none">
+                  <Image src={defaultIconPreview} alt="Default Icon Preview" fill sizes="40px" data-ai-hint="logo icon" />
                 </div>
-                <div className="text-left">
+                <div className="text-left pointer-events-none">
                   <span className="block font-semibold">Default Icon</span>
                   <span className="text-xs text-muted-foreground">Standard style</span>
                 </div>
-                {iconPreference === 'default' ? <CheckCircle className="ml-auto h-6 w-6 text-primary-foreground" /> : <Circle className="ml-auto h-6 w-6 text-muted-foreground" />}
+                {iconPreference === 'default' ? <CheckCircle className="ml-auto h-6 w-6 text-primary-foreground pointer-events-none" /> : <Circle className="ml-auto h-6 w-6 text-muted-foreground pointer-events-none" />}
               </Button>
               <Button
+                type="button"
                 variant={iconPreference === 'alternative' ? 'default' : 'outline'}
                 onClick={() => handleSelect('alternative')}
-                className="w-full flex-1 justify-start items-center p-5 h-auto"
+                className="w-full sm:flex-1 justify-start items-center p-5 h-auto"
               >
-                <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border">
-                  <Image src={alternativeIconPreview} alt="Alternative Icon Preview" layout="fill" objectFit="cover" data-ai-hint="logo icon alternative"/>
+                <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border pointer-events-none">
+                  <Image src={alternativeIconPreview} alt="Alternative Icon Preview" fill sizes="40px" data-ai-hint="logo icon alternative"/>
                 </div>
-                <div className="text-left">
+                <div className="text-left pointer-events-none">
                   <span className="block font-semibold">Alternative Icon</span>
                   <span className="text-xs text-muted-foreground">Second style</span>
                 </div>
-                {iconPreference === 'alternative' ? <CheckCircle className="ml-auto h-6 w-6 text-primary-foreground" /> : <Circle className="ml-auto h-6 w-6 text-muted-foreground" />}
+                {iconPreference === 'alternative' ? <CheckCircle className="ml-auto h-6 w-6 text-primary-foreground pointer-events-none" /> : <Circle className="ml-auto h-6 w-6 text-muted-foreground pointer-events-none" />}
               </Button>
             </div>
           </div>
@@ -110,8 +116,7 @@ export default function AddToHomeScreenButton() {
               </div>
             </div>
           </div>
-        </div>
-
+        
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="secondary">
