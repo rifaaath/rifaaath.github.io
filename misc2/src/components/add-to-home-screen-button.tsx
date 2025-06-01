@@ -56,7 +56,7 @@ export default function AddToHomeScreenButton() {
               <Button
                 variant={iconPreference === 'default' ? 'default' : 'outline'}
                 onClick={() => handleSelect('default')}
-                className="flex-1 justify-start items-center p-3 h-auto"
+                className="flex-1 justify-start items-center p-4 h-auto"
               >
                 <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border">
                   <Image src={defaultIconPreview} alt="Default Icon Preview" layout="fill" objectFit="cover" data-ai-hint="logo icon" />
@@ -65,12 +65,12 @@ export default function AddToHomeScreenButton() {
                   <span className="block font-semibold">Default Icon</span>
                   <span className="text-xs text-muted-foreground">Standard style</span>
                 </div>
-                {iconPreference === 'default' ? <CheckCircle className="ml-auto h-5 w-5 text-primary-foreground" /> : <Circle className="ml-auto h-5 w-5 text-muted-foreground" />}
+                {iconPreference === 'default' ? <CheckCircle className="ml-auto h-6 w-6 text-primary-foreground" /> : <Circle className="ml-auto h-6 w-6 text-muted-foreground" />}
               </Button>
               <Button
                 variant={iconPreference === 'alternative' ? 'default' : 'outline'}
                 onClick={() => handleSelect('alternative')}
-                className="flex-1 justify-start items-center p-3 h-auto"
+                className="flex-1 justify-start items-center p-4 h-auto"
               >
                 <div className="relative w-10 h-10 mr-3 rounded-md overflow-hidden border border-border">
                   <Image src={alternativeIconPreview} alt="Alternative Icon Preview" layout="fill" objectFit="cover" data-ai-hint="logo icon alternative"/>
@@ -79,7 +79,7 @@ export default function AddToHomeScreenButton() {
                   <span className="block font-semibold">Alternative Icon</span>
                   <span className="text-xs text-muted-foreground">Second style</span>
                 </div>
-                {iconPreference === 'alternative' ? <CheckCircle className="ml-auto h-5 w-5 text-primary-foreground" /> : <Circle className="ml-auto h-5 w-5 text-muted-foreground" />}
+                {iconPreference === 'alternative' ? <CheckCircle className="ml-auto h-6 w-6 text-primary-foreground" /> : <Circle className="ml-auto h-6 w-6 text-muted-foreground" />}
               </Button>
             </div>
           </div>
