@@ -3,10 +3,9 @@
 
 import { format, addMinutes, differenceInMinutes, parse, set, addDays } from 'date-fns';
 import * as cheerio from 'cheerio';
-// Import types for Browser. Explicit imports for puppeteer and puppeteer-core for clarity.
 import type { Browser as PuppeteerBrowser } from 'puppeteer';
 import type { Browser as PuppeteerCoreBrowser } from 'puppeteer-core';
-import chromium from "@sparticuz/chromium-min";
+
 
 export interface PrayerTime {
   name: string;
@@ -123,38 +122,28 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
   const serverTimeNow = new Date(); 
   let browser: PuppeteerBrowser | PuppeteerCoreBrowser | undefined;
   let htmlContent: string;
+  const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN;
+  const IS_VERCEL_PRODUCTION = process.env.VERCEL_ENV === 'production';
 
   try {
-    console.log("Current environment VERCEL_ENV:", process.env.VERCEL_ENV);
-    if (process.env.VERCEL_ENV === "production") {
-      console.log("Production environment (Vercel) detected. Using puppeteer-core and @sparticuz/chromium-min.");
-      // const chromium = await import("@sparticuz/chromium-min");
-      const puppeteerCore = await import("puppeteer-core");
-      const remoteExecutablePath = "https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar";
-      
-      const executablePath = await chromium.executablePath(remoteExecutablePath);
-      console.log("Chromium executable path (Vercel):", executablePath);
-
-      if (!executablePath) {
-        throw new Error("Failed to get executable path from @sparticuz/chromium-min");
-      }
-
-      browser = await puppeteerCore.launch({
-        args: chromium.args,
-        executablePath,
-        headless: chromium.headless,
-        ignoreHTTPSErrors: true, // Important for some sites
-      });
-      console.log("Puppeteer-core browser launched on Vercel.");
-    } else {
-      console.log("Local development environment detected. Using full puppeteer.");
-      const puppeteer = await import("puppeteer");
+    if (BROWSERLESS_TOKEN) {
+      console.log("Using Browserless.io for Puppeteer connection.");
+      const puppeteerCore = await import('puppeteer-core');
+      const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_TOKEN}`;
+      browser = await puppeteerCore.connect({ browserWSEndpoint });
+      console.log("Connected to Browserless.io instance.");
+    } else if (!IS_VERCEL_PRODUCTION) {
+      console.log("Local development: No Browserless token. Using local Puppeteer.");
+      const puppeteer = await import('puppeteer');
       browser = await puppeteer.launch({
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
         ignoreHTTPSErrors: true,
       });
-      console.log("Full puppeteer browser launched locally.");
+      console.log("Local Puppeteer browser launched.");
+    } else {
+      console.error("Production environment (Vercel) without BROWSERLESS_TOKEN. Cannot launch Puppeteer.");
+      return createErrorFallbackData("Puppeteer configuration error in production.", serverTimeNow);
     }
       
     const page = await browser.newPage();
@@ -193,7 +182,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     }
     
     htmlContent = await page.content();
-    await page.close(); // Close page once content is fetched
+    await page.close();
 
     const $ = cheerio.load(htmlContent);
     let rawPrayerTimes: PrayerTime[] = [];
@@ -205,8 +194,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (scrapedDateText) {
       displayGregorianDate = scrapedDateText; 
       try {
-        // Expected format: EEEE, d. MMM yyyy (e.g., Sunday, 1. Jun 2025)
-        const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d MMM yyyy', new Date());
+        const parsedDateAttempt = parse(scrapedDateText, 'EEEE, d. MMM yyyy', new Date());
         if (parsedDateAttempt instanceof Date && !isNaN(parsedDateAttempt.getTime())) {
           dateToParseTimesFor = parsedDateAttempt;
         } else {
@@ -349,7 +337,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     return createErrorFallbackData(`An unexpected server error occurred: ${unexpectedError.message}`, new Date());
   } finally {
     if (browser) {
-      console.log("Closing Puppeteer browser in finally block.");
+      console.log("Closing Puppeteer browser/connection in finally block.");
       await browser.close();
     }
   }
