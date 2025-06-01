@@ -45,7 +45,7 @@ export default function AddToHomeScreenButton() {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-4 text-sm space-y-6">
+        <div className="py-4 text-sm space-y-6 overflow-y-auto max-h-[calc(85vh-12rem)]">
           <div>
             <h3 className="font-semibold text-primary mb-2 text-md">App Icon Preference</h3>
             <p className="text-xs text-muted-foreground mb-3">

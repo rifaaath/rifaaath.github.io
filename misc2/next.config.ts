@@ -19,13 +19,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Ensure @sparticuz/chromium is not bundled by Next.js server-side.
-      // It will be require()'d from node_modules at runtime.
-      config.externals = [...config.externals, '@sparticuz/chromium'];
-    }
-    return config;
+  experimental: {
+    serverComponentsExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   },
 };
 
