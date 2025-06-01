@@ -86,6 +86,9 @@ importers:
       cheerio:
         specifier: ^1.0.0-rc.12
         version: 1.0.0
+      chrome-aws-lambda:
+        specifier: ^10.1.0
+        version: 10.1.0(puppeteer-core@24.9.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -119,6 +122,9 @@ importers:
       puppeteer:
         specifier: ^24.9.0
         version: 24.9.0(typescript@5.8.3)
+      puppeteer-core:
+        specifier: ^24.9.0
+        version: 24.9.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1897,6 +1903,12 @@ packages:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
 
+  chrome-aws-lambda@10.1.0:
+    resolution: {integrity: sha512-NZQVf+J4kqG4sVhRm3WNmOfzY0OtTSm+S8rg77pwePa9RCYHzhnzRs8YvNI6L9tALIW6RpmefWiPURt3vURXcw==}
+    engines: {node: '>= 10.16'}
+    peerDependencies:
+      puppeteer-core: ^10.1.0
+
   chromium-bidi@5.1.0:
     resolution: {integrity: sha512-9MSRhWRVoRPDG0TgzkHrshFSJJNZzfY5UFqUMuksg7zL1yoZIZ3jLB0YAgHclbiAxPI86pBnwDX1tbzoiV8aFw==}
     peerDependencies:
@@ -2743,6 +2755,13 @@ packages:
 
   kuler@2.0.0:
     resolution: {integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==}
+
+  lambdafs@2.1.1:
+    resolution: {integrity: sha512-x5k8JcoJWkWLvCVBzrl4pzvkEHSgSBqFjg3Dpsc4AcTMq7oUMym4cL/gRTZ6VM4mUMY+M0dIbQ+V1c1tsqqanQ==}
+    engines: {node: '>= 10.16'}
+    hasBin: true
+    bundledDependencies:
+      - tar-fs
 
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
@@ -5639,6 +5658,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  chrome-aws-lambda@10.1.0(puppeteer-core@24.9.0):
+    dependencies:
+      lambdafs: 2.1.1
+      puppeteer-core: 24.9.0
+
   chromium-bidi@5.1.0(devtools-protocol@0.0.1439962):
     dependencies:
       devtools-protocol: 0.0.1439962
@@ -6621,6 +6645,8 @@ snapshots:
       graceful-fs: 4.2.11
 
   kuler@2.0.0: {}
+
+  lambdafs@2.1.1: {}
 
   lilconfig@3.1.3: {}
 
