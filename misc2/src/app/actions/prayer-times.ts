@@ -4,7 +4,7 @@
 import { format, addMinutes, differenceInMinutes, parse, set, addDays } from 'date-fns';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer-core';
-import chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
 
 
 export interface PrayerTime {
@@ -141,39 +141,32 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     let dateToParseTimesFor: Date = serverTimeNow; 
 
     try {
-      console.log("Configuring Puppeteer for Vercel/local...");
+      console.log("Configuring Puppeteer with @sparticuz/chromium...");
       let browser;
-      if (process.env.VERCEL_ENV) {
-        console.log("Launching Puppeteer with chrome-aws-lambda for Vercel...");
-        browser = await puppeteer.launch({
-          args: chromium.args,
-          defaultViewport: chromium.defaultViewport,
-          executablePath: await chromium.executablePath(),
-          headless: chromium.headless,
-          ignoreHTTPSErrors: true,
-        });
-      } else {
-        console.log("Launching Puppeteer with local Chrome/Chromium...");
-        let localExecutablePath;
-        // Attempt to dynamically import 'puppeteer' for local full executable path
-        // This avoids making 'puppeteer' a hard dependency if only 'puppeteer-core' is needed for Vercel
-        // try {
-        //     const {executablePath: getLocalPath} = await import('puppeteer');
-        //     localExecutablePath = getLocalPath();
-        //     console.log("Found local puppeteer executable:", localExecutablePath);
-        // } catch (e) {
-        //     console.warn("Full puppeteer package not found for local executable path. Ensure Chrome/Chromium is in PATH or set executablePath manually if local launch fails.");
-        // }
+      
+      const executablePath = process.env.VERCEL_ENV 
+        ? await chromium.executablePath()
+        : undefined; // For local development, puppeteer-core will try to find a system Chrome.
 
-        browser = await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-            headless: true, 
-            executablePath: localExecutablePath, // May be undefined, puppeteer will try to find Chrome
-        });
+      if (!executablePath && process.env.VERCEL_ENV) {
+        console.error("Failed to get executable path from @sparticuz/chromium on Vercel.");
+        return createErrorFallbackData("Server configuration error for browser.", serverTimeNow);
       }
       
+      if (!process.env.VERCEL_ENV && !executablePath) {
+        console.warn("Running in local development mode. Puppeteer-core will attempt to use a system-installed Chrome/Chromium. Ensure it is available and in your PATH if issues occur.");
+      }
+      
+      console.log(`Using executable path: ${executablePath || 'System default/Not specified'}`);
+      
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: executablePath, // Will be undefined for local if not Vercel
+        headless: chromium.headless, 
+      });
+      
       const page = await browser.newPage();
-      console.log(`Navigating to ${MAWAQIT_URL}...`);
       await page.goto(MAWAQIT_URL, { waitUntil: 'networkidle0', timeout: 45000 }); 
       
       await page.waitForSelector('div.prayers .time div', { timeout: 20000 });
