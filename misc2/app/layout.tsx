@@ -7,7 +7,7 @@ import AnimatedBackground from '@/components/animated-background';
 
 export const metadata: Metadata = {
   title: 'FAU Prayer Room',
-  description: 'Prayer room schedule and prayer times for FAU Erlangen-Nürnberg, Technische Fakultät.',
+  description: 'Prayer room slot and prayer times for FAU Erlangen-Nürnberg, Technische Fakultät.',
   manifest: '/manifest.json',
 };
 

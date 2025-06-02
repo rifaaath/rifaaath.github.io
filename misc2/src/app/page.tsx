@@ -13,7 +13,7 @@ export default async function HomePage() {
           FAU Erlangen-Nürnberg Prayer Room
         </h1>
         <p className="text-md sm:text-lg text-muted-foreground mt-2">
-          Technische Fakultät | Schedule & Prayer Times
+          Technische Fakultät | Slots & Prayer Times
         </p>
         <div className="mt-4 flex justify-center items-center gap-4">
           <AddToHomeScreenButton />
@@ -32,10 +32,13 @@ export default async function HomePage() {
       
       <footer className="text-center mt-10 mb-6 py-6">
         <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} With love
+          &copy; {new Date().getFullYear()} With ♡
         </p>
         <p className="text-2xs text-muted-foreground/70 mt-1">
           Please note: Prayer times are scraped from Mawaqit.net and are for informational purposes. Schedule is based on 15-min slots.
+        </p>
+        <p className="text-sm text-gray-500 mt-6 italic">
+          Heads up: This isn’t an official FAU page—just something put together for helpful guidance.
         </p>
       </footer>
     </main>

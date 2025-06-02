@@ -6,26 +6,37 @@
 @layer base {
   /* Light Theme (default) */
   :root {
-    --background: 0 0% 98%; /* Off-white */
+    --background: 0 0% 94%; /* Light gray (#F0F0F0) - PRD */
     --foreground: 240 10% 3.9%; /* Dark Gray for text */
-    --card: 0 0% 100%; /* White */
+    --card: 0 0% 100%; /* White - for clean cards */
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 212 71% 50%; /* Bright Blue for Man - consistent across themes */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
+    
+    /* App's main interactive color - PRD Soft sky blue */
+    --primary: 197 71% 73%; 
+    --primary-foreground: 240 10% 3.9%; /* Dark text for contrast on soft sky blue */
+    
     --secondary: 240 4.8% 95.9%; /* Very light gray */
     --secondary-foreground: 240 5.9% 10%; /* Dark gray text on secondary */
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%; /* Medium gray text on muted */
-    --accent: 336 78% 50%; /* Bright Pink for Woman - consistent across themes */
-    --accent-foreground: 0 0% 100%; /* White text on accent */
+    
+    /* App's accent color - PRD Warm sand */
+    --accent: 60 56% 91%; 
+    --accent-foreground: 240 10% 3.9%; /* Dark text for contrast on warm sand */
+    
     --destructive: 0 84.2% 60.2%; /* Red for No Entry - consistent */
     --destructive-foreground: 0 0% 98%; /* Light text on destructive */
+    
     --border: 240 5.9% 90%; /* Light gray border */
     --input: 240 5.9% 90%; /* Light gray input background */
-    --ring: 212 71% 45%; /* Slightly darker blue for ring on light bg */
+    --ring: 197 71% 68%; /* Slightly darker sky blue for ring on light bg */
     --radius: 0.5rem;
+
+    /* Clock-specific colors */
+    --clock-man-color: 212 71% 50%; /* Bright Blue for Man */
+    --clock-woman-color: 336 78% 50%; /* Bright Pink for Woman */
 
     /* Chart colors - Light theme versions (example, adjust as needed) */
     --chart-1: 12 76% 61%;
@@ -37,12 +48,12 @@
     /* Sidebar colors - Light theme versions */
     --sidebar-background: 240 4.8% 95.9%;
     --sidebar-foreground: 240 10% 3.9%;
-    --sidebar-primary: 212 71% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 197 71% 73%; /* App Primary */
+    --sidebar-primary-foreground: 240 10% 3.9%;
     --sidebar-accent: 240 5.9% 90%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 240 5.9% 85%;
-    --sidebar-ring: 212 71% 45%;
+    --sidebar-ring: 197 71% 68%; /* App Ring */
   }
 
   /* Dark Theme */
@@ -53,19 +64,30 @@
     --card-foreground: 0 0% 95%;
     --popover: 210 25% 19%;
     --popover-foreground: 0 0% 95%;
-    --primary: 212 71% 59%; /* Original Bright Blue for Man */
-    --primary-foreground: 0 0% 100%; /* White */
+
+    /* App's main interactive color - Adapted PRD Soft sky blue for dark */
+    --primary: 197 65% 65%; 
+    --primary-foreground: 240 10% 3.9%; /* Dark text for contrast */
+    
     --secondary: 210 15% 40%; /* Original Medium Gray for other elements */
     --secondary-foreground: 0 0% 95%;
     --muted: 210 15% 30%; /* Original Darker Gray for muted elements */
     --muted-foreground: 210 15% 65%; /* Lighter Gray for muted text */
-    --accent: 336 78% 57%; /* Original Bright Pink for Woman */
-    --accent-foreground: 0 0% 100%; /* White */
-    --destructive: 0 84% 60%; /* Original Brighter Red for No Entry */
+    
+    /* App's accent color - Adapted PRD Warm sand for dark */
+    --accent: 50 45% 80%; 
+    --accent-foreground: 240 10% 3.9%; /* Dark text for contrast */
+    
+    --destructive: 0 70% 55%; /* Slightly adjusted Red for No Entry */
     --destructive-foreground: 0 0% 100%;
+    
     --border: 210 20% 25%; /* Original Subtle border */
     --input: 210 20% 25%;
-    --ring: 212 71% 50%; /* Original Related to primary */
+    --ring: 197 65% 60%; /* Related to primary */
+
+    /* Clock-specific colors */
+    --clock-man-color: 212 71% 59%; /* Original Bright Blue for Man */
+    --clock-woman-color: 336 78% 57%; /* Original Bright Pink for Woman */
 
     /* Chart colors - Dark theme (original) */
     --chart-1: 220 70% 50%;
@@ -77,12 +99,12 @@
     /* Sidebar colors - Dark theme (original) */
     --sidebar-background: 212 19% 12%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 212 71% 59%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 197 65% 65%; /* App Primary */
+    --sidebar-primary-foreground: 240 10% 3.9%;
     --sidebar-accent: 210 25% 22%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 210 20% 25%;
-    --sidebar-ring: 212 71% 50%;
+    --sidebar-ring: 197 65% 60%; /* App Ring */
   }
 }
 
@@ -98,12 +120,11 @@
 }
 
 /* SVG fill patterns for stripes (ensure these use themeable colors if needed or are simple like white) */
-/* For simplicity, these patterns will use fixed foreground colors that should work on both themes, or primary/accent */
-.fill-stripes-primary {
-  fill: url(#stripes-primary);
+.fill-stripes-clock-man {
+  fill: url(#stripes-clock-man);
 }
-.fill-stripes-accent {
-  fill: url(#stripes-accent);
+.fill-stripes-clock-woman {
+  fill: url(#stripes-clock-woman);
 }
 
 /* Animations for background elements */
