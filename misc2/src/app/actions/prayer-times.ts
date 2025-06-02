@@ -15,23 +15,23 @@ const berlinTimeZone = 'Europe/Berlin';
 
 export interface PrayerTime {
   name: string;
-  time: string;
-  dateTime: Date;
+  time: string; // Display time string "HH:mm"
+  dateTime: Date; // Date object representing Berlin time components as UTC
 }
 
 export interface PrayerTimesData {
-  date: string;
+  date: string; // Display date string, Berlin formatted
   hijriDate?: string;
-  times: { name: string; time: string }[];
+  times: { name: string; time: string }[]; // name and display time
   nextPrayer: {
     name: string;
-    time: string;
-    dateTime: Date;
+    time: string; // Display time
+    dateTime: Date; // Berlin time components as UTC
     timeUntil: string;
   } | null;
   currentPrayer: {
     name: string;
-    time: string;
+    time: string; // Display time
   } | null;
   error?: string;
   isStaleData?: boolean;
@@ -82,60 +82,60 @@ function parseScrapedDate(dateText: string): Date | null {
 }
 
 
-function parsePrayerTime(timeStr: string, baseDateBerlinMidnight: Date): Date | null {
-  if (!timeStr) {
-    console.warn("parsePrayerTime: Received empty or null time string.");
-    return null;
-  }
-  if (!(baseDateBerlinMidnight instanceof Date) || isNaN(baseDateBerlinMidnight.getTime())) {
-    console.warn("parsePrayerTime: Received invalid baseDate: " + String(baseDateBerlinMidnight) + ". Cannot parse time \"" + String(timeStr) + "\".");
+// Parses a time string (HH:mm) for a given Berlin YYYY-MM-DD string.
+// Returns a Date object where UTC components match the Berlin time components.
+function parsePrayerTime(timeStr: string, forBerlinYMD: string): Date | null {
+  if (!timeStr || !forBerlinYMD) {
+    console.warn("parsePrayerTime: Received empty or null timeStr or forBerlinYMD string.");
     return null;
   }
 
   const timePart = timeStr.trim();
   if (!timePart || !timePart.includes(':')) {
-    console.warn("parsePrayerTime: Invalid time string format (missing ':' or empty timePart): \"" + String(timeStr) + "\"");
+    console.warn(`parsePrayerTime: Invalid time string format: "${timeStr}"`);
     return null;
   }
 
   const [hoursStr, minutesStr] = timePart.split(':');
-  if (!hoursStr || minutesStr === undefined) {
-    console.warn("parsePrayerTime: Invalid time components for: \"" + String(timeStr) + "\" (hoursStr: " + String(hoursStr) + ", minutesStr: " + String(minutesStr) + ")");
-    return null;
-  }
-
   const hours = parseInt(hoursStr, 10);
   const minutes = parseInt(minutesStr, 10);
 
-  if (isNaN(hours) || isNaN(minutes)) {
-    console.warn("parsePrayerTime: Failed to parse hour/minute numbers for: " + String(timeStr) + " (parsed hours=" + hours + ", parsed minutes=" + minutes + ")");
+  if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    console.warn(`parsePrayerTime: Invalid hour/minute numbers for: "${timeStr}"`);
     return null;
   }
 
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-    console.warn("parsePrayerTime: Hour/minute out of range for 24h format: " + String(timeStr) + " (hours=" + hours + ", minutes=" + minutes + ")");
-    return null;
-  }
-
+  // Construct ISO-like string with Z to signify UTC.
+  // The components H, M are Berlin time components.
+  const isoString = `${forBerlinYMD}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00Z`;
+  
   try {
-    return set(baseDateBerlinMidnight, { hours, minutes, seconds: 0, milliseconds: 0 });
+    const parsedDate = dateFnsParse(isoString, "yyyy-MM-dd'T'HH:mm:ss'Z'", new Date(0));
+    if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
+      return parsedDate;
+    }
+    console.warn(`parsePrayerTime: Failed to parse constructed ISO string: "${isoString}"`);
+    return null;
   } catch (e: any) {
-    console.error("parsePrayerTime: Error calling 'set' for baseDate: " + String(baseDateBerlinMidnight) + ", hours: " + hours + ", minutes: " + minutes, e);
+    console.error(`parsePrayerTime: Error parsing ISO string "${isoString}":`, e);
     return null;
   }
 }
 
-function createErrorFallbackData(errorMessage: string, serverTimeInBerlinForFallback: Date): PrayerTimesData {
+// Fallback data uses Berlin time components as UTC for consistency
+function createErrorFallbackData(errorMessage: string, currentBerlinTimeAsUTC: Date): PrayerTimesData {
   let displayDate = "Error loading date";
-  let validFallbackDateBerlin = serverTimeInBerlinForFallback;
-
-  if (!(validFallbackDateBerlin instanceof Date) || isNaN(validFallbackDateBerlin.getTime())) {
-      console.error("CRITICAL: Invalid date provided to createErrorFallbackData. Using new Date() in Berlin TZ.");
-      validFallbackDateBerlin = toZonedTime(new Date(), berlinTimeZone);
-  }
+  
+  // currentBerlinTimeAsUTC is already "Berlin time components as UTC"
+  // For display, we need to format it *as if* it's Berlin time.
+  // This means telling formatInTimeZone that this UTC date IS ALREADY Berlin time.
+  // A common trick: convert it to UTC string, then parse it back as if it's a local Berlin string.
+  // Or, more simply, format its UTC components.
+  const fallbackBerlinYMD = dfnsFormat(currentBerlinTimeAsUTC, 'yyyy-MM-dd'); // YMD of Berlin, from the UTC components
+  const fallbackDateForDisplay = dateFnsParse(fallbackBerlinYMD, 'yyyy-MM-dd', new Date(0)); // True UTC for that Berlin day's midnight
 
   try {
-    displayDate = formatInTimeZone(validFallbackDateBerlin, berlinTimeZone, 'EEEE, d. MMM yyyy');
+    displayDate = formatInTimeZone(fallbackDateForDisplay, berlinTimeZone, 'EEEE, d. MMM yyyy');
   } catch (e) {
     console.error("Error formatting date in createErrorFallbackData:", e);
     displayDate = "Date Unavailable (Formatting Error)";
@@ -148,13 +148,12 @@ function createErrorFallbackData(errorMessage: string, serverTimeInBerlinForFall
   ];
   const fallbackDisplayTimes: { name: string; time: string }[] = [];
   
-  const fallbackBaseDate = dfnsStartOfDay(validFallbackDateBerlin);
-
-
   fallbackTimesRawInfo.forEach(ft => {
-    const dt = parsePrayerTime(ft.timeStr, fallbackBaseDate);
+    // parsePrayerTime expects berlinYMD, so we provide the one from currentBerlinTimeAsUTC
+    const dt = parsePrayerTime(ft.timeStr, fallbackBerlinYMD);
     if (dt) {
-      fallbackDisplayTimes.push({ name: ft.name, time: formatInTimeZone(dt, berlinTimeZone, 'HH:mm') });
+      // For display, format its UTC components (which are Berlin time)
+      fallbackDisplayTimes.push({ name: ft.name, time: dfnsFormat(dt, 'HH:mm') });
     } else {
       fallbackDisplayTimes.push({ name: ft.name, time: 'N/A' });
     }
@@ -172,9 +171,9 @@ function createErrorFallbackData(errorMessage: string, serverTimeInBerlinForFall
 }
 
 function calculatePrayerStatus(
-  rawPrayerTimes: PrayerTime[],
-  serverTimeInBerlin: Date, 
-  dateForPrayerTimesBerlin: Date
+  rawPrayerTimes: PrayerTime[], // dateTime is Berlin components as UTC
+  serverTimeBerlinAsUTC: Date, // Berlin components as UTC
+  currentBerlinYMD: string // YYYY-MM-DD for the prayer times day
 ): {
   nextPrayer: PrayerTimesData['nextPrayer'];
   currentPrayer: PrayerTimesData['currentPrayer'];
@@ -193,14 +192,17 @@ function calculatePrayerStatus(
 
   const todayFajr = salatPrayers.find(p => p.name === 'Fajr');
 
-  if (todayFajr && serverTimeInBerlin < todayFajr.dateTime) {
+  // Check if current time is before today's Fajr (i.e., still "yesterday's Isha" period)
+  if (todayFajr && serverTimeBerlinAsUTC < todayFajr.dateTime) {
+    // Try to find Isha from the *current* list (which is for currentBerlinYMD)
     const ishaDataForToday = salatPrayers.find(p => p.name === 'Isha');
     if (ishaDataForToday) {
-        const yesterdayIshaDateTime = addDays(ishaDataForToday.dateTime, -1); 
-        if (serverTimeInBerlin >= yesterdayIshaDateTime) {
+        // Construct "yesterday's Isha" by taking today's Isha time and moving it to previous day
+        const yesterdayIshaDateTime = addDays(ishaDataForToday.dateTime, -1);
+        if (serverTimeBerlinAsUTC >= yesterdayIshaDateTime) {
             currentPrayerInfo = {
                 name: 'Isha',
-                time: formatInTimeZone(yesterdayIshaDateTime, berlinTimeZone, 'HH:mm')
+                time: dfnsFormat(yesterdayIshaDateTime, 'HH:mm') // Format its UTC (Berlin) time
             };
         }
     }
@@ -212,14 +214,20 @@ function calculatePrayerStatus(
       let endCurrentPrayerTime: Date;
 
       if (prayer.name === 'Isha') {
+        // End of Isha is Fajr of the *next* day
         let tomorrowFajrDateTime: Date;
-        const fajrDataForTomorrow = salatPrayers.find(p => p.name === 'Fajr');
-        if (fajrDataForTomorrow) {
-           tomorrowFajrDateTime = addDays(fajrDataForTomorrow.dateTime, 1);
+        if (todayFajr) { // todayFajr is from currentBerlinYMD
+           tomorrowFajrDateTime = addDays(todayFajr.dateTime, 1);
         } else {
-           const dayAfterPrayerDate = addDays(dateForPrayerTimesBerlin, 1);
-           tomorrowFajrDateTime = set(dayAfterPrayerDate, { hours: 3, minutes: 30, seconds: 0, milliseconds: 0 });
-           console.warn(`calculatePrayerStatus: Fallback for Isha end time. Using synthetic Fajr for ${formatInTimeZone(tomorrowFajrDateTime, berlinTimeZone, 'yyyy-MM-dd HH:mm')}`);
+           // Extremely rare fallback: if Fajr isn't in list, synthesize one for next day
+           const nextDayBerlinYMD = dfnsFormat(addDays(dateFnsParse(currentBerlinYMD, 'yyyy-MM-dd', new Date(0)), 1), 'yyyy-MM-dd');
+           const syntheticFajr = parsePrayerTime('03:30', nextDayBerlinYMD);
+           if (syntheticFajr) {
+             tomorrowFajrDateTime = syntheticFajr;
+           } else { // Should not happen
+             tomorrowFajrDateTime = addDays(prayer.dateTime, 8 * 60 * 60 * 1000); // 8 hours later
+           }
+           console.warn(`calculatePrayerStatus: Fallback for Isha end time. Using synthetic Fajr for next day.`);
         }
         endCurrentPrayerTime = tomorrowFajrDateTime;
       } else {
@@ -227,51 +235,54 @@ function calculatePrayerStatus(
         if (nextPrayerInList) {
           endCurrentPrayerTime = nextPrayerInList.dateTime;
         } else {
+           // Should not happen if Isha is last, but as a guard
            endCurrentPrayerTime = addMinutes(prayer.dateTime, 90);
            console.warn(`calculatePrayerStatus: Last prayer ${prayer.name} is not Isha, and no next prayer found. Setting arbitrary end time.`);
         }
       }
 
-      if (serverTimeInBerlin >= prayer.dateTime && serverTimeInBerlin < endCurrentPrayerTime) {
-        currentPrayerInfo = { name: prayer.name, time: prayer.time };
+      if (serverTimeBerlinAsUTC >= prayer.dateTime && serverTimeBerlinAsUTC < endCurrentPrayerTime) {
+        currentPrayerInfo = { name: prayer.name, time: prayer.time }; // prayer.time is display string
         break;
       }
     }
   }
-
+  
   for (const prayer of salatPrayers) {
-    if (serverTimeInBerlin < prayer.dateTime) {
-      const diffMinutes = differenceInMinutes(prayer.dateTime, serverTimeInBerlin);
-      const hoursUntil = Math.floor(diffMinutes / 60);
-      const minutesUntil = diffMinutes % 60;
+    if (serverTimeBerlinAsUTC < prayer.dateTime) {
+      const diffMinutesTotal = differenceInMinutes(prayer.dateTime, serverTimeBerlinAsUTC);
+      const hoursUntil = Math.floor(diffMinutesTotal / 60);
+      const minutesUntil = diffMinutesTotal % 60;
       let timeUntilStr = '';
       if (hoursUntil > 0) timeUntilStr += `${hoursUntil}h `;
       timeUntilStr += `${minutesUntil}m`;
 
       nextPrayerInfo = {
         name: prayer.name,
-        time: prayer.time,
-        dateTime: prayer.dateTime,
+        time: prayer.time, // display string
+        dateTime: prayer.dateTime, // Berlin components as UTC
         timeUntil: timeUntilStr.trim(),
       };
       break;
     }
   }
 
+  // If no next prayer today, next prayer is tomorrow's Fajr
   if (!nextPrayerInfo && todayFajr) {
     const tomorrowFajrDateTime = addDays(todayFajr.dateTime, 1);
-    if (serverTimeInBerlin < tomorrowFajrDateTime) { 
-        const diffMinutes = differenceInMinutes(tomorrowFajrDateTime, serverTimeInBerlin);
-        const hoursUntil = Math.floor(diffMinutes / 60);
-        const minutesUntil = diffMinutes % 60;
+    // Check if serverTime is still before this future Fajr (it should be if we are in this block)
+     if (serverTimeBerlinAsUTC < tomorrowFajrDateTime) { 
+        const diffMinutesTotal = differenceInMinutes(tomorrowFajrDateTime, serverTimeBerlinAsUTC);
+        const hoursUntil = Math.floor(diffMinutesTotal / 60);
+        const minutesUntil = diffMinutesTotal % 60;
         let timeUntilStr = '';
         if (hoursUntil > 0) timeUntilStr += `${hoursUntil}h `;
         timeUntilStr += `${minutesUntil}m`;
 
         nextPrayerInfo = {
           name: todayFajr.name,
-          time: todayFajr.time,
-          dateTime: tomorrowFajrDateTime,
+          time: todayFajr.time, // display string
+          dateTime: tomorrowFajrDateTime, // Berlin components as UTC for next day
           timeUntil: `${timeUntilStr.trim()} (tomorrow)`,
         };
     }
@@ -281,14 +292,14 @@ function calculatePrayerStatus(
 
 
 export async function getPrayerTimes(): Promise<PrayerTimesData> {
-  const initialUTCDate = new Date();
+  const initialUTCDate = new Date(); // True UTC
   console.log(`[PTIMES] Raw initialUTCDate: ${initialUTCDate.toISOString()} (Year: ${getYear(initialUTCDate)}, Month: ${getMonth(initialUTCDate)}, Day: ${dfnsGetDate(initialUTCDate)}, H: ${getHours(initialUTCDate)}, M: ${getMinutes(initialUTCDate)}, S: ${getSeconds(initialUTCDate)})`);
   console.log(`[PTIMES] Direct format of initialUTCDate for Berlin: ${formatInTimeZone(initialUTCDate, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')}`);
 
-  const serverTimeNowInBerlin = toZonedTime(initialUTCDate, berlinTimeZone);
-  console.log(`[PTIMES] serverTimeNowInBerlin (after toZonedTime): ${serverTimeNowInBerlin.toISOString()}`);
-  console.log(`[PTIMES] serverTimeNowInBerlin formatted for Berlin: ${formatInTimeZone(serverTimeNowInBerlin, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')}`);
-
+  // serverTimeBerlinAsUTC will have its UTC components representing Berlin time components due to toZonedTime's behavior on Vercel
+  const serverTimeBerlinAsUTC = toZonedTime(initialUTCDate, berlinTimeZone);
+  console.log(`[PTIMES] serverTimeBerlinAsUTC (after toZonedTime): ${serverTimeBerlinAsUTC.toISOString()}`);
+  console.log(`[PTIMES] serverTimeBerlinAsUTC formatted for Berlin: ${formatInTimeZone(serverTimeBerlinAsUTC, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')} (Note: formatInTimeZone re-interprets based on its UTC value)`);
 
   let browser: PuppeteerBrowser | PuppeteerCoreBrowser | undefined;
   let htmlContent: string;
@@ -313,7 +324,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
       console.log("Local Puppeteer browser launched.");
     } else {
       console.error("Production environment (Vercel) without BROWSERLESS_TOKEN. Cannot launch Puppeteer.");
-      return createErrorFallbackData("Puppeteer configuration error in production.", serverTimeNowInBerlin);
+      return createErrorFallbackData("Puppeteer configuration error in production.", serverTimeBerlinAsUTC);
     }
 
     const page = await browser.newPage();
@@ -336,7 +347,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     } catch (gotoError: any) {
       console.error("Puppeteer page.goto failed:", gotoError.message, gotoError.stack);
       if (browser) await browser.close();
-      return createErrorFallbackData(`Puppeteer navigation failed: ${gotoError.message}`, serverTimeNowInBerlin);
+      return createErrorFallbackData(`Puppeteer navigation failed: ${gotoError.message}`, serverTimeBerlinAsUTC);
     }
     console.log("Navigation successful. Current URL:", page.url());
 
@@ -362,61 +373,68 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     let displayGregorianDate: string;
     let hijriDateDisplay: string | undefined;
 
-    const serverTodayBerlinMidnight = dfnsStartOfDay(toZonedTime(initialUTCDate, berlinTimeZone)); 
-
-    let dateToParseTimesFor: Date;
+    // This is the YYYY-MM-DD string FOR THE DAY IN BERLIN that prayer times will be parsed for.
+    let prayerDataBerlinYMD: string;
     let isStaleData = false;
+
+    // True UTC date representing midnight of the server's current day in Berlin
+    const serverTodayTrueUTCMidnightBerlin = dfnsStartOfDay(toZonedTime(initialUTCDate, berlinTimeZone));
+    // YMD string of the server's current day in Berlin
+    const serverTodayBerlinYMD = formatInTimeZone(initialUTCDate, berlinTimeZone, 'yyyy-MM-dd');
 
     const scrapedDateText = $('#gregorianDate').text().trim();
     console.log("Scraped Gregorian date text from page:", `"${scrapedDateText}"`);
 
     if (scrapedDateText) {
-      const parsedScrapedDateRaw = parseScrapedDate(scrapedDateText);
+      const parsedScrapedDateRaw = parseScrapedDate(scrapedDateText); // This is a true UTC Date
 
       if (parsedScrapedDateRaw) {
-        const scrapedDateBerlinMidnight = dfnsStartOfDay(toZonedTime(parsedScrapedDateRaw, berlinTimeZone));
-        console.log("Successfully parsed scraped date as Berlin midnight (UTC):", scrapedDateBerlinMidnight.toISOString(), `(Berlin: ${formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')})`);
+        // YMD string of the scraped date, as interpreted in Berlin
+        const scrapedBerlinYMD = formatInTimeZone(parsedScrapedDateRaw, berlinTimeZone, 'yyyy-MM-dd');
+        console.log(`Scraped date (Berlin YMD): ${scrapedBerlinYMD}, Server date (Berlin YMD): ${serverTodayBerlinYMD}`);
 
-        if (isSameDay(scrapedDateBerlinMidnight, serverTodayBerlinMidnight)) {
-          console.log("Scraped date is current.");
-          dateToParseTimesFor = scrapedDateBerlinMidnight;
-          displayGregorianDate = formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy');
+        if (scrapedBerlinYMD === serverTodayBerlinYMD) {
+          console.log("Scraped date is current for Berlin.");
+          prayerDataBerlinYMD = scrapedBerlinYMD;
+          // For display, use the true UTC midnight of this Berlin day
+          displayGregorianDate = formatInTimeZone(serverTodayTrueUTCMidnightBerlin, berlinTimeZone, 'EEEE, d. MMM yyyy');
         } else {
-          console.warn(`Stale data! Scraped: "${formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')}", Server: (${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')}). Using server time.`);
-          dateToParseTimesFor = serverTodayBerlinMidnight;
-          const formattedScraped = formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'd. MMM');
-          displayGregorianDate = `${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')} (Data for ${formattedScraped})`;
+          console.warn(`Stale data! Scraped Berlin YMD: "${scrapedBerlinYMD}", Server Berlin YMD: "${serverTodayBerlinYMD}". Using server time.`);
+          prayerDataBerlinYMD = serverTodayBerlinYMD;
+          const formattedScrapedForDisplay = formatInTimeZone(parsedScrapedDateRaw, berlinTimeZone, 'd. MMM');
+          displayGregorianDate = `${formatInTimeZone(serverTodayTrueUTCMidnightBerlin, berlinTimeZone, 'EEEE, d. MMM yyyy')} (Data for ${formattedScrapedForDisplay})`;
           isStaleData = true;
         }
       } else {
         console.warn(`Failed to parse scraped date string "${scrapedDateText}". Falling back to current server time.`);
-        dateToParseTimesFor = serverTodayBerlinMidnight;
-        displayGregorianDate = `${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')} (Scraped Date Invalid)`;
+        prayerDataBerlinYMD = serverTodayBerlinYMD;
+        displayGregorianDate = `${formatInTimeZone(serverTodayTrueUTCMidnightBerlin, berlinTimeZone, 'EEEE, d. MMM yyyy')} (Scraped Date Invalid)`;
       }
     } else {
       console.warn("No date text found for '#gregorianDate'. Using current server time.");
-      dateToParseTimesFor = serverTodayBerlinMidnight;
-      displayGregorianDate = formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy');
+      prayerDataBerlinYMD = serverTodayBerlinYMD;
+      displayGregorianDate = formatInTimeZone(serverTodayTrueUTCMidnightBerlin, berlinTimeZone, 'EEEE, d. MMM yyyy');
     }
-    console.log("Effective date for prayer time calculations (Berlin midnight UTC):", dateToParseTimesFor.toISOString(), `(Berlin: ${formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')})`);
+    console.log("Effective Berlin YMD for prayer time parsing:", prayerDataBerlinYMD);
 
     hijriDateDisplay = $('#hijriDate').first().text().trim() || undefined;
 
     $('div.prayers > div').each((_i, el) => {
       const name = $(el).find('.name').text().trim();
-      const timeString = $(el).find('.time > div').first().text().trim();
+      const timeString = $(el).find('.time > div').first().text().trim(); // "HH:mm"
 
       if (name && timeString) {
-        const prayerDateTime = parsePrayerTime(timeString, dateToParseTimesFor);
+        // prayerDateTime will have UTC components = Berlin time components
+        const prayerDateTime = parsePrayerTime(timeString, prayerDataBerlinYMD);
         if (prayerDateTime) {
           rawPrayerTimes.push({
             name,
-            time: timeString,
+            time: timeString, // Keep original display string
             dateTime: prayerDateTime,
           });
-          console.log(`Parsed prayer: ${name} at ${timeString} (UTC: ${prayerDateTime.toISOString()}) for date ${formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd')}`);
+          console.log(`Parsed prayer: ${name} at ${timeString} (Berlin components as UTC: ${prayerDateTime.toISOString()}) for Berlin YMD ${prayerDataBerlinYMD}`);
         } else {
-          console.warn(`Failed to parse prayer time for ${name}: ${timeString} with base date ${formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd')}`);
+          console.warn(`Failed to parse prayer time for ${name}: ${timeString} for Berlin YMD ${prayerDataBerlinYMD}`);
         }
       }
     });
@@ -424,11 +442,11 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (rawPrayerTimes.length === 0) {
       console.warn('No prayer times were successfully parsed.');
       console.log('Prayer section HTML:', $('div.prayers').html());
-      return createErrorFallbackData("Failed to find prayer times on the page.", serverTimeNowInBerlin);
+      return createErrorFallbackData("Failed to find prayer times on the page.", serverTimeBerlinAsUTC);
     }
 
     const displayTimes = rawPrayerTimes.map(pt => ({ name: pt.name, time: pt.time }));
-    const { nextPrayer: nextPrayerInfo, currentPrayer: currentPrayerInfo } = calculatePrayerStatus(rawPrayerTimes, serverTimeNowInBerlin, dateToParseTimesFor);
+    const { nextPrayer: nextPrayerInfo, currentPrayer: currentPrayerInfo } = calculatePrayerStatus(rawPrayerTimes, serverTimeBerlinAsUTC, prayerDataBerlinYMD);
 
     return {
       date: displayGregorianDate,
@@ -441,7 +459,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
 
   } catch (unexpectedError: any) {
     console.error("An unexpected server error occurred in getPrayerTimes:", unexpectedError.message, unexpectedError.stack);
-    const errorFallbackTime = serverTimeNowInBerlin instanceof Date && !isNaN(serverTimeNowInBerlin.getTime()) ? serverTimeNowInBerlin : toZonedTime(new Date(), berlinTimeZone);
+    const errorFallbackTime = serverTimeBerlinAsUTC instanceof Date && !isNaN(serverTimeBerlinAsUTC.getTime()) ? serverTimeBerlinAsUTC : toZonedTime(new Date(), berlinTimeZone);
     return createErrorFallbackData(`An unexpected server error occurred: ${unexpectedError.message}`, errorFallbackTime);
   } finally {
     if (browser) {
@@ -450,4 +468,3 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     }
   }
 }
-
