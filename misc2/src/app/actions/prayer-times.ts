@@ -1,7 +1,11 @@
 
 'use server';
 
-import { set, addDays, isSameDay, isToday, startOfDay, differenceInMinutes, addMinutes, parse as dateFnsParse, format } from 'date-fns';
+import {
+  set, addDays, isSameDay, isToday, startOfDay as dfnsStartOfDay,
+  differenceInMinutes, addMinutes, parse as dateFnsParse, format as dfnsFormat,
+  getYear, getMonth, getDate as dfnsGetDate, getHours, getMinutes, getSeconds
+} from 'date-fns';
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz'; // Explicit named imports
 import * as cheerio from 'cheerio';
 import type { Browser as PuppeteerBrowser } from 'puppeteer';
@@ -37,16 +41,14 @@ const MAWAQIT_URL = "https://mawaqit.net/en/friedenmoschee-erlangen";
 
 function parseScrapedDate(dateText: string): Date | null {
   const cleanedDateText = dateText.replace(/[.,]/g, '');
-  // Try parsing just "d MMM yyyy" or "d MMMM yyyy" first, more robust to weekday name changes/localization
   const dayMonthYearFormats = ['d MMM yyyy', 'd MMMM yyyy'];
   for (const formatStr of dayMonthYearFormats) {
     try {
-        const dateOnlyText = cleanedDateText.split(' ').slice(1).join(' '); // Attempt to extract "1 Jun 2025" from "Sunday 1 Jun 2025"
+        const dateOnlyText = cleanedDateText.split(' ').slice(1).join(' ');
         if (dateOnlyText) {
             let parsed = dateFnsParse(dateOnlyText, formatStr, new Date());
             if (parsed instanceof Date && !isNaN(parsed.getTime())) return parsed;
         }
-        // Fallback to parsing the whole string if the above fails or dateOnlyText is empty
         let parsed = dateFnsParse(cleanedDateText, formatStr, new Date());
         if (parsed instanceof Date && !isNaN(parsed.getTime())) return parsed;
     } catch (e) { /* continue */ }
@@ -116,8 +118,6 @@ function parsePrayerTime(timeStr: string, baseDateBerlinMidnight: Date): Date | 
   }
 
   try {
-    // baseDateBerlinMidnight is already a Date object representing 00:00:00 in Berlin for the target day.
-    // Setting hours/minutes on it directly yields a Date object representing that prayer time in Berlin.
     return set(baseDateBerlinMidnight, { hours, minutes, seconds: 0, milliseconds: 0 });
   } catch (e: any) {
     console.error("parsePrayerTime: Error calling 'set' for baseDate: " + String(baseDateBerlinMidnight) + ", hours: " + hours + ", minutes: " + minutes, e);
@@ -131,7 +131,7 @@ function createErrorFallbackData(errorMessage: string, serverTimeInBerlinForFall
 
   if (!(validFallbackDateBerlin instanceof Date) || isNaN(validFallbackDateBerlin.getTime())) {
       console.error("CRITICAL: Invalid date provided to createErrorFallbackData. Using new Date() in Berlin TZ.");
-      validFallbackDateBerlin = toZonedTime(new Date(), berlinTimeZone); // Ensure it's Berlin zoned
+      validFallbackDateBerlin = toZonedTime(new Date(), berlinTimeZone);
   }
 
   try {
@@ -148,9 +148,7 @@ function createErrorFallbackData(errorMessage: string, serverTimeInBerlinForFall
   ];
   const fallbackDisplayTimes: { name: string; time: string }[] = [];
   
-  // validFallbackDateBerlin is already a Date object representing a moment in Berlin time.
-  // startOfDay will give 00:00:00 of that day in Berlin.
-  const fallbackBaseDate = startOfDay(validFallbackDateBerlin);
+  const fallbackBaseDate = dfnsStartOfDay(validFallbackDateBerlin);
 
 
   fallbackTimesRawInfo.forEach(ft => {
@@ -169,14 +167,14 @@ function createErrorFallbackData(errorMessage: string, serverTimeInBerlinForFall
     nextPrayer: null,
     currentPrayer: null,
     error: errorMessage,
-    isStaleData: false, // Fallback data is synthetic, not "stale" from a source
+    isStaleData: false,
   };
 }
 
 function calculatePrayerStatus(
   rawPrayerTimes: PrayerTime[],
   serverTimeInBerlin: Date, 
-  dateForPrayerTimesBerlin: Date // This is dateToParseTimesFor (Berlin midnight of the day for which times are parsed)
+  dateForPrayerTimesBerlin: Date
 ): {
   nextPrayer: PrayerTimesData['nextPrayer'];
   currentPrayer: PrayerTimesData['currentPrayer'];
@@ -185,7 +183,7 @@ function calculatePrayerStatus(
   let currentPrayerInfo: PrayerTimesData['currentPrayer'] = null;
 
   const salatPrayers = rawPrayerTimes
-    .filter(p => p.name !== 'Sunrise' && p.dateTime instanceof Date && !isNaN(p.dateTime.getTime()))
+    .filter(p => p.dateTime instanceof Date && !isNaN(p.dateTime.getTime()) && p.name !== 'Sunrise')
     .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
 
   if (salatPrayers.length === 0) {
@@ -195,66 +193,52 @@ function calculatePrayerStatus(
 
   const todayFajr = salatPrayers.find(p => p.name === 'Fajr');
 
-  // Check for yesterday's Isha if current time is after midnight but before today's Fajr
   if (todayFajr && serverTimeInBerlin < todayFajr.dateTime) {
     const ishaDataForToday = salatPrayers.find(p => p.name === 'Isha');
     if (ishaDataForToday) {
-        // Construct yesterday's Isha time using today's Isha time but on the previous day
         const yesterdayIshaDateTime = addDays(ishaDataForToday.dateTime, -1); 
-        // Isha from yesterday is current if serverTimeInBerlin is after it and before today's Fajr
-        if (serverTimeInBerlin >= yesterdayIshaDateTime) { // serverTimeInBerlin < todayFajr.dateTime is already checked
+        if (serverTimeInBerlin >= yesterdayIshaDateTime) {
             currentPrayerInfo = {
-                name: 'Isha', // It's "yesterday's" Isha
+                name: 'Isha',
                 time: formatInTimeZone(yesterdayIshaDateTime, berlinTimeZone, 'HH:mm')
             };
         }
     }
   }
 
-
-  // If current prayer is not yet determined (e.g., not yesterday's Isha), check today's prayers
   if (!currentPrayerInfo) {
     for (let i = 0; i < salatPrayers.length; i++) {
       const prayer = salatPrayers[i];
       let endCurrentPrayerTime: Date;
 
       if (prayer.name === 'Isha') {
-        // Isha ends at Fajr of the next day
         let tomorrowFajrDateTime: Date;
-        const fajrDataForTomorrow = salatPrayers.find(p => p.name === 'Fajr'); // Fajr data from the current list
+        const fajrDataForTomorrow = salatPrayers.find(p => p.name === 'Fajr');
         if (fajrDataForTomorrow) {
-           // Use today's Fajr time, but for the next day relative to dateForPrayerTimesBerlin
            tomorrowFajrDateTime = addDays(fajrDataForTomorrow.dateTime, 1);
         } else {
-           // Fallback if Fajr data is missing (should be rare with Mawaqit)
-           // Create a synthetic Fajr for the day after dateForPrayerTimesBerlin
            const dayAfterPrayerDate = addDays(dateForPrayerTimesBerlin, 1);
-           // This results in a Date object representing 03:30 on dayAfterPrayerDate, in Berlin time
            tomorrowFajrDateTime = set(dayAfterPrayerDate, { hours: 3, minutes: 30, seconds: 0, milliseconds: 0 });
-           console.warn(`calculatePrayerStatus: Fallback for Isha end time (no Fajr data for dateForPrayerTimesBerlin). Using synthetic Fajr for ${formatInTimeZone(tomorrowFajrDateTime, berlinTimeZone, 'yyyy-MM-dd HH:mm')}`);
+           console.warn(`calculatePrayerStatus: Fallback for Isha end time. Using synthetic Fajr for ${formatInTimeZone(tomorrowFajrDateTime, berlinTimeZone, 'yyyy-MM-dd HH:mm')}`);
         }
         endCurrentPrayerTime = tomorrowFajrDateTime;
       } else {
-        // For other prayers, they end when the next prayer begins
         const nextPrayerInList = salatPrayers[i + 1];
         if (nextPrayerInList) {
           endCurrentPrayerTime = nextPrayerInList.dateTime;
         } else {
-          // Should not happen if Isha is the last prayer listed.
-          // If Asr is last and Maghrib isn't listed, this is a fallback.
-           endCurrentPrayerTime = addMinutes(prayer.dateTime, 90); // Arbitrary 90 mins
+           endCurrentPrayerTime = addMinutes(prayer.dateTime, 90);
            console.warn(`calculatePrayerStatus: Last prayer ${prayer.name} is not Isha, and no next prayer found. Setting arbitrary end time.`);
         }
       }
 
       if (serverTimeInBerlin >= prayer.dateTime && serverTimeInBerlin < endCurrentPrayerTime) {
         currentPrayerInfo = { name: prayer.name, time: prayer.time };
-        break; // Current prayer found
+        break;
       }
     }
   }
 
-  // Determine next prayer
   for (const prayer of salatPrayers) {
     if (serverTimeInBerlin < prayer.dateTime) {
       const diffMinutes = differenceInMinutes(prayer.dateTime, serverTimeInBerlin);
@@ -270,15 +254,12 @@ function calculatePrayerStatus(
         dateTime: prayer.dateTime,
         timeUntil: timeUntilStr.trim(),
       };
-      break; // Next prayer found
+      break;
     }
   }
 
-  // If no next prayer found for today (i.e., after Isha), next prayer is Fajr of tomorrow
-  if (!nextPrayerInfo && todayFajr) { // todayFajr here refers to Fajr of dateForPrayerTimesBerlin
+  if (!nextPrayerInfo && todayFajr) {
     const tomorrowFajrDateTime = addDays(todayFajr.dateTime, 1);
-    // This check is important: ensure serverTimeInBerlin is actually *before* this tomorrowFajrDateTime
-    // (e.g. serverTimeInBerlin is 23:00 on day X, tomorrowFajr is 03:30 on day X+1)
     if (serverTimeInBerlin < tomorrowFajrDateTime) { 
         const diffMinutes = differenceInMinutes(tomorrowFajrDateTime, serverTimeInBerlin);
         const hoursUntil = Math.floor(diffMinutes / 60);
@@ -288,9 +269,9 @@ function calculatePrayerStatus(
         timeUntilStr += `${minutesUntil}m`;
 
         nextPrayerInfo = {
-          name: todayFajr.name, // Name is Fajr
-          time: todayFajr.time, // Time is Fajr's time
-          dateTime: tomorrowFajrDateTime, // DateTime is for tomorrow
+          name: todayFajr.name,
+          time: todayFajr.time,
+          dateTime: tomorrowFajrDateTime,
           timeUntil: `${timeUntilStr.trim()} (tomorrow)`,
         };
     }
@@ -301,10 +282,13 @@ function calculatePrayerStatus(
 
 export async function getPrayerTimes(): Promise<PrayerTimesData> {
   const initialUTCDate = new Date();
-  console.log(`[prayer-times.ts] Function start. Raw UTC from new Date(): ${initialUTCDate.toISOString()}`);
+  console.log(`[PTIMES] Raw initialUTCDate: ${initialUTCDate.toISOString()} (Year: ${getYear(initialUTCDate)}, Month: ${getMonth(initialUTCDate)}, Day: ${dfnsGetDate(initialUTCDate)}, H: ${getHours(initialUTCDate)}, M: ${getMinutes(initialUTCDate)}, S: ${getSeconds(initialUTCDate)})`);
+  console.log(`[PTIMES] Direct format of initialUTCDate for Berlin: ${formatInTimeZone(initialUTCDate, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')}`);
 
   const serverTimeNowInBerlin = toZonedTime(initialUTCDate, berlinTimeZone);
-  console.log("getPrayerTimes called at effective Berlin time:", formatInTimeZone(serverTimeNowInBerlin, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX'));
+  console.log(`[PTIMES] serverTimeNowInBerlin (after toZonedTime): ${serverTimeNowInBerlin.toISOString()}`);
+  console.log(`[PTIMES] serverTimeNowInBerlin formatted for Berlin: ${formatInTimeZone(serverTimeNowInBerlin, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')}`);
+
 
   let browser: PuppeteerBrowser | PuppeteerCoreBrowser | undefined;
   let htmlContent: string;
@@ -351,7 +335,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
       await page.goto(MAWAQIT_URL, { waitUntil: 'networkidle0', timeout: 45000 });
     } catch (gotoError: any) {
       console.error("Puppeteer page.goto failed:", gotoError.message, gotoError.stack);
-      if (browser) await browser.close(); // ensure browser is closed on error
+      if (browser) await browser.close();
       return createErrorFallbackData(`Puppeteer navigation failed: ${gotoError.message}`, serverTimeNowInBerlin);
     }
     console.log("Navigation successful. Current URL:", page.url());
@@ -360,15 +344,14 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
       await page.waitForSelector('div.prayers .time div', { timeout: 15000 });
       console.log("Main prayer time selector found.");
     } catch (selectorError) {
-      console.warn("waitForSelector for prayer times timed out. Page content might be incomplete or structure changed.");
-      // Not returning, attempt to get content anyway
+      console.warn("waitForSelector for prayer times timed out.");
     }
     
     try {
-        await page.waitForSelector('#gregorianDate', { timeout: 25000, visible: true }); // Increased timeout slightly
+        await page.waitForSelector('#gregorianDate', { timeout: 25000, visible: true });
         console.log("Gregorian date element (#gregorianDate) is visible.");
     } catch (dateSelectorError) {
-        console.warn("waitForSelector for #gregorianDate timed out or element not visible. Date might be missing or page structure changed.");
+        console.warn("waitForSelector for #gregorianDate timed out or element not visible.");
     }
     
     htmlContent = await page.content();
@@ -379,46 +362,43 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     let displayGregorianDate: string;
     let hijriDateDisplay: string | undefined;
 
-    // serverTodayBerlinMidnight represents 00:00:00 on the current day in Berlin.
-    // Its underlying UTC timestamp is correct for that Berlin midnight.
-    const serverTodayBerlinMidnight = startOfDay(toZonedTime(initialUTCDate, berlinTimeZone)); 
+    const serverTodayBerlinMidnight = dfnsStartOfDay(toZonedTime(initialUTCDate, berlinTimeZone)); 
 
-    let dateToParseTimesFor: Date; // This will be a Date object representing 00:00:00 in Berlin for the target day.
+    let dateToParseTimesFor: Date;
     let isStaleData = false;
 
     const scrapedDateText = $('#gregorianDate').text().trim();
     console.log("Scraped Gregorian date text from page:", `"${scrapedDateText}"`);
 
     if (scrapedDateText) {
-      const parsedScrapedDateRaw = parseScrapedDate(scrapedDateText); // This is parsed as server-local first
+      const parsedScrapedDateRaw = parseScrapedDate(scrapedDateText);
 
       if (parsedScrapedDateRaw) {
-        // Convert the parsed date (which might be server-local) to Berlin time, then get start of day in Berlin.
-        const scrapedDateBerlinMidnight = startOfDay(toZonedTime(parsedScrapedDateRaw, berlinTimeZone));
+        const scrapedDateBerlinMidnight = dfnsStartOfDay(toZonedTime(parsedScrapedDateRaw, berlinTimeZone));
         console.log("Successfully parsed scraped date as Berlin midnight (UTC):", scrapedDateBerlinMidnight.toISOString(), `(Berlin: ${formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')})`);
 
-        if (isSameDay(scrapedDateBerlinMidnight, serverTodayBerlinMidnight)) { // isSameDay compares the day, month, year components correctly for these Berlin-midnight dates
-          console.log("Scraped date is current. Using scraped date for display and calculations.");
+        if (isSameDay(scrapedDateBerlinMidnight, serverTodayBerlinMidnight)) {
+          console.log("Scraped date is current.");
           dateToParseTimesFor = scrapedDateBerlinMidnight;
           displayGregorianDate = formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy');
         } else {
-          console.warn(`Stale data detected! Scraped date "${formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')}" is not today (${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')}). Using current server time but marking as stale.`);
+          console.warn(`Stale data! Scraped: "${formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')}", Server: (${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')}). Using server time.`);
           dateToParseTimesFor = serverTodayBerlinMidnight;
           const formattedScraped = formatInTimeZone(scrapedDateBerlinMidnight, berlinTimeZone, 'd. MMM');
           displayGregorianDate = `${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')} (Data for ${formattedScraped})`;
           isStaleData = true;
         }
       } else {
-        console.warn(`Failed to parse scraped date string "${scrapedDateText}". Falling back to current server time for parsing.`);
+        console.warn(`Failed to parse scraped date string "${scrapedDateText}". Falling back to current server time.`);
         dateToParseTimesFor = serverTodayBerlinMidnight;
         displayGregorianDate = `${formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy')} (Scraped Date Invalid)`;
       }
     } else {
-      console.warn("No date text found using selector '#gregorianDate'. Using current server time for parsing.");
+      console.warn("No date text found for '#gregorianDate'. Using current server time.");
       dateToParseTimesFor = serverTodayBerlinMidnight;
       displayGregorianDate = formatInTimeZone(serverTodayBerlinMidnight, berlinTimeZone, 'EEEE, d. MMM yyyy');
     }
-    console.log("Effective date for prayer time calculations (dateToParseTimesFor, Berlin midnight UTC):", dateToParseTimesFor.toISOString(), `(Berlin: ${formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')})`);
+    console.log("Effective date for prayer time calculations (Berlin midnight UTC):", dateToParseTimesFor.toISOString(), `(Berlin: ${formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd HH:mm:ss XXX')})`);
 
     hijriDateDisplay = $('#hijriDate').first().text().trim() || undefined;
 
@@ -427,13 +407,12 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
       const timeString = $(el).find('.time > div').first().text().trim();
 
       if (name && timeString) {
-        // dateToParseTimesFor is already Berlin midnight for the correct day.
         const prayerDateTime = parsePrayerTime(timeString, dateToParseTimesFor);
         if (prayerDateTime) {
           rawPrayerTimes.push({
             name,
-            time: timeString, // Keep original string for display consistency
-            dateTime: prayerDateTime, // This Date object represents the prayer time in Berlin
+            time: timeString,
+            dateTime: prayerDateTime,
           });
           console.log(`Parsed prayer: ${name} at ${timeString} (UTC: ${prayerDateTime.toISOString()}) for date ${formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd')}`);
         } else {
@@ -443,13 +422,12 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     });
 
     if (rawPrayerTimes.length === 0) {
-      console.warn('No prayer times were successfully parsed. Page structure might have changed.');
+      console.warn('No prayer times were successfully parsed.');
       console.log('Prayer section HTML:', $('div.prayers').html());
-      return createErrorFallbackData("Failed to find prayer times on the page. Selectors may be outdated.", serverTimeNowInBerlin);
+      return createErrorFallbackData("Failed to find prayer times on the page.", serverTimeNowInBerlin);
     }
 
     const displayTimes = rawPrayerTimes.map(pt => ({ name: pt.name, time: pt.time }));
-    // Pass dateToParseTimesFor (Berlin midnight of the prayer day) to calculatePrayerStatus
     const { nextPrayer: nextPrayerInfo, currentPrayer: currentPrayerInfo } = calculatePrayerStatus(rawPrayerTimes, serverTimeNowInBerlin, dateToParseTimesFor);
 
     return {
@@ -463,7 +441,6 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
 
   } catch (unexpectedError: any) {
     console.error("An unexpected server error occurred in getPrayerTimes:", unexpectedError.message, unexpectedError.stack);
-    // Ensure serverTimeNowInBerlin is used if available, otherwise re-zone a new Date.
     const errorFallbackTime = serverTimeNowInBerlin instanceof Date && !isNaN(serverTimeNowInBerlin.getTime()) ? serverTimeNowInBerlin : toZonedTime(new Date(), berlinTimeZone);
     return createErrorFallbackData(`An unexpected server error occurred: ${unexpectedError.message}`, errorFallbackTime);
   } finally {
@@ -473,3 +450,4 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     }
   }
 }
+
