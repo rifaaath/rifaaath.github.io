@@ -26,7 +26,7 @@ export interface PrayerTimesData {
   nextPrayer: {
     name: string;
     time: string; // Display time
-    dateTime: Date; // Berlin time components as UTC
+    dateTime: Date; // True UTC Date object for the prayer
     timeUntil: string;
   } | null;
   currentPrayer: {
@@ -128,13 +128,11 @@ function createErrorFallbackData(errorMessage: string, currentBerlinTimeAsUTC: D
   
   // currentBerlinTimeAsUTC is already "Berlin time components as UTC"
   // For display, we need to format it *as if* it's Berlin time.
-  // This means telling formatInTimeZone that this UTC date IS ALREADY Berlin time.
-  // A common trick: convert it to UTC string, then parse it back as if it's a local Berlin string.
-  // Or, more simply, format its UTC components.
   const fallbackBerlinYMD = dfnsFormat(currentBerlinTimeAsUTC, 'yyyy-MM-dd'); // YMD of Berlin, from the UTC components
-  const fallbackDateForDisplay = dateFnsParse(fallbackBerlinYMD, 'yyyy-MM-dd', new Date(0)); // True UTC for that Berlin day's midnight
+  const fallbackDateForDisplay = dateFnsParse(fallbackBerlinYMD, 'yyyy-MM-dd', new Date(0)); // True UTC for that Berlin day's midnight (00:00Z)
 
   try {
+    // To display this 00:00Z date correctly as Berlin date string.
     displayDate = formatInTimeZone(fallbackDateForDisplay, berlinTimeZone, 'EEEE, d. MMM yyyy');
   } catch (e) {
     console.error("Error formatting date in createErrorFallbackData:", e);
@@ -175,10 +173,10 @@ function calculatePrayerStatus(
   serverTimeBerlinAsUTC: Date, // Berlin components as UTC
   currentBerlinYMD: string // YYYY-MM-DD for the prayer times day
 ): {
-  nextPrayer: PrayerTimesData['nextPrayer'];
+  nextPrayer: Omit<Exclude<PrayerTimesData['nextPrayer'], null>, 'dateTime'> & { dateTime: Date } | null; // dateTime here is Berlin components as UTC
   currentPrayer: PrayerTimesData['currentPrayer'];
 } {
-  let nextPrayerInfo: PrayerTimesData['nextPrayer'] = null;
+  let nextPrayerInfo: Omit<Exclude<PrayerTimesData['nextPrayer'], null>, 'dateTime'> & { dateTime: Date } | null = null;
   let currentPrayerInfo: PrayerTimesData['currentPrayer'] = null;
 
   const salatPrayers = rawPrayerTimes
@@ -378,7 +376,9 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     let isStaleData = false;
 
     // True UTC date representing midnight of the server's current day in Berlin
+    // This is the actual 00:00Z in Berlin, used for display purposes primarily.
     const serverTodayTrueUTCMidnightBerlin = dfnsStartOfDay(toZonedTime(initialUTCDate, berlinTimeZone));
+    
     // YMD string of the server's current day in Berlin
     const serverTodayBerlinYMD = formatInTimeZone(initialUTCDate, berlinTimeZone, 'yyyy-MM-dd');
 
@@ -386,7 +386,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     console.log("Scraped Gregorian date text from page:", `"${scrapedDateText}"`);
 
     if (scrapedDateText) {
-      const parsedScrapedDateRaw = parseScrapedDate(scrapedDateText); // This is a true UTC Date
+      const parsedScrapedDateRaw = parseScrapedDate(scrapedDateText); // This is a true UTC Date from parsing "Day, DD Month YYYY"
 
       if (parsedScrapedDateRaw) {
         // YMD string of the scraped date, as interpreted in Berlin
@@ -396,7 +396,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
         if (scrapedBerlinYMD === serverTodayBerlinYMD) {
           console.log("Scraped date is current for Berlin.");
           prayerDataBerlinYMD = scrapedBerlinYMD;
-          // For display, use the true UTC midnight of this Berlin day
+          // For display, use the true UTC midnight of this Berlin day, formatted for Berlin
           displayGregorianDate = formatInTimeZone(serverTodayTrueUTCMidnightBerlin, berlinTimeZone, 'EEEE, d. MMM yyyy');
         } else {
           console.warn(`Stale data! Scraped Berlin YMD: "${scrapedBerlinYMD}", Server Berlin YMD: "${serverTodayBerlinYMD}". Using server time.`);
@@ -446,13 +446,27 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     }
 
     const displayTimes = rawPrayerTimes.map(pt => ({ name: pt.name, time: pt.time }));
-    const { nextPrayer: nextPrayerInfo, currentPrayer: currentPrayerInfo } = calculatePrayerStatus(rawPrayerTimes, serverTimeBerlinAsUTC, prayerDataBerlinYMD);
+    const { nextPrayer: nextPrayerInfoBerlinComponents, currentPrayer: currentPrayerInfo } = calculatePrayerStatus(rawPrayerTimes, serverTimeBerlinAsUTC, prayerDataBerlinYMD);
+    
+    let finalNextPrayerInfoForClient: PrayerTimesData['nextPrayer'] = null;
+    if (nextPrayerInfoBerlinComponents) {
+      // Convert the nextPrayerInfo.dateTime from "Berlin components as UTC" back to "true UTC" for the client.
+      // The offset captures how much toZonedTime shifted the original UTC.
+      const offsetMilliseconds = serverTimeBerlinAsUTC.getTime() - initialUTCDate.getTime();
+      const trueUtcNextPrayerDateTime = new Date(nextPrayerInfoBerlinComponents.dateTime.getTime() - offsetMilliseconds);
+      
+      finalNextPrayerInfoForClient = {
+        ...nextPrayerInfoBerlinComponents,
+        dateTime: trueUtcNextPrayerDateTime, // This is now a true UTC Date object
+      };
+    }
+
 
     return {
       date: displayGregorianDate,
       hijriDate: hijriDateDisplay,
       times: displayTimes,
-      nextPrayer: nextPrayerInfo,
+      nextPrayer: finalNextPrayerInfoForClient,
       currentPrayer: currentPrayerInfo,
       isStaleData,
     };
@@ -468,3 +482,5 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     }
   }
 }
+
+
