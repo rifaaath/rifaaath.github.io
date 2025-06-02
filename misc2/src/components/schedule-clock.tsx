@@ -250,7 +250,7 @@ export default function ScheduleClock() {
 
       <div className="bg-card p-4 rounded-lg shadow-lg w-full text-center text-card-foreground">
         <div className="mb-2"> 
-          <span className="text-sm sm:text-md text-muted-foreground">Current Status: </span>
+          <span className="text-sm sm:text-md text-muted-foreground">Current Slot: </span>
           <span className={`text-lg sm:text-xl font-bold ${currentPhaseInfo.statusColor}`}>
             {currentPhaseInfo.displayName}
           </span>
