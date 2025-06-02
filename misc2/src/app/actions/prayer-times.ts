@@ -402,7 +402,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
         if (prayerDateTime) {
           rawPrayerTimes.push({
             name,
-            time: DFNSTZ.formatInTimeZone(prayerDateTime, berlinTimeZone, 'HH:mm'), 
+            time: timeString, 
             dateTime: prayerDateTime, 
           });
           console.log(`Parsed prayer: ${name} at ${DFNSTZ.formatInTimeZone(prayerDateTime, berlinTimeZone, 'HH:mm')} (UTC: ${prayerDateTime.toISOString()}) for date ${DFNSTZ.formatInTimeZone(dateToParseTimesFor, berlinTimeZone, 'yyyy-MM-dd')}`);
