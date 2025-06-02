@@ -39,8 +39,8 @@ export default function PrayerTimesDisplay() {
       }
     }
     fetchData();
-    const intervalId = setInterval(fetchData, 60 * 1000 * 5); // Refresh every 5 minutes
-    return () => clearInterval(intervalId);
+    // const intervalId = setInterval(fetchData, 60 * 1000 * 5); // Refresh every 5 minutes REMOVED
+    // return () => clearInterval(intervalId); // REMOVED
   }, []);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function PrayerTimesDisplay() {
           setTimeUntilNextPrayer("Now!");
           if (intervalId) clearInterval(intervalId);
           // Optionally trigger a refetch or indicate prayer time has arrived
-          // setTimeout(fetchData, 2000); // Refetch after 2s for example
+          // setTimeout(fetchData, 2000); // Refetch after 2s for example - Consider implications if re-enabled
           return;
         }
 
