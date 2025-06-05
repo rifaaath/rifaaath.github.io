@@ -308,7 +308,7 @@ export async function getPrayerTimes(): Promise<PrayerTimesData> {
     if (BROWSERLESS_TOKEN) {
       console.log("Using Browserless.io for Puppeteer connection.");
       const puppeteerCore = await import('puppeteer-core');
-      const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_TOKEN}`;
+      const browserWSEndpoint = `wss://production-ams.browserless.io?token=${BROWSERLESS_TOKEN}`;
       browser = await puppeteerCore.connect({ browserWSEndpoint });
       console.log("Connected to Browserless.io instance.");
     } else if (!IS_VERCEL_PRODUCTION) {
