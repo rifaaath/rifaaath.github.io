@@ -43,7 +43,7 @@ export default async function HomePage() {
           Please note: Prayer times are scraped from Mawaqit.net and are for informational purposes. Schedule is based on 15-min slots.
         </p>
         <p className="text-sm text-gray-500 mt-6 italic">
-          Heads up: This isnt an official FAU page—just something put together for helpful guidance.
+          Heads up: This isn't an official FAU page—just something put together for helpful guidance.
         </p>
 
       </footer>
