@@ -1,6 +1,7 @@
 
 import type {Metadata} from 'next';
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css';
 // Removed Toaster, ThemeProvider, AnimatedBackground, IconPreferenceProvider imports as they are in AppProviders
 
@@ -36,7 +37,8 @@ export default function RootLayout({
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="hsl(212 19% 14%)" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground">
-      <Analytics />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
