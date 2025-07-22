@@ -8,7 +8,7 @@ const COOKIE_NAME = 'dev_access_granted';
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // If the request is for the /dev page
+  // This is the key change: only apply logic if the path is /dev
   if (pathname.startsWith('/dev')) {
     const password = searchParams.get('password');
     const hasAccessCookie = request.cookies.has(COOKIE_NAME);
@@ -32,17 +32,17 @@ export function middleware(request: NextRequest) {
     }
     
     // If no cookie and no (or wrong) password, show the password page
-    // We achieve this by rewriting the URL to the same path, but adding a search param
-    // that the page component can use to know it should render the prompt.
+    // by rewriting the URL with a param the page component can check.
     const url = request.nextUrl.clone();
     url.searchParams.set('auth', 'false');
     return NextResponse.rewrite(url);
   }
 
+  // Fallback for any other path (e.g., '/', '/about', etc.)
   return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
+// This config ensures the middleware only runs on requests to /dev
 export const config = {
   matcher: '/dev/:path*',
 }
