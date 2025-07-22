@@ -1,13 +1,12 @@
 
 import type {Metadata} from 'next';
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css';
-// Removed Toaster, ThemeProvider, AnimatedBackground, IconPreferenceProvider imports as they are in AppProviders
+import { AppProviders } from './app-providers'; 
+import { IconPreferenceProvider } from '@/context/icon-preference-context';
 
 export const metadata: Metadata = {
   title: 'FAU Prayer Room',
-  description: 'Prayer room slot and prayer times for FAU Erlangen-Nürnberg, Technische Fakultät.',
+  description: 'Prayer room schedule and prayer times for FAU Erlangen-Nürnberg, Technische Fakultät.',
   manifest: '/manifest.json', // Default manifest
 };
 
@@ -16,7 +15,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log('[RootLayout] Rendering RootLayout (Server Component)');
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -37,8 +35,11 @@ export default function RootLayout({
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="hsl(212 19% 14%)" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col bg-background text-foreground">
-        <Analytics />
-        <SpeedInsights />
+        <AppProviders>
+          <IconPreferenceProvider>
+            {children}
+          </IconPreferenceProvider>
+        </AppProviders>
       </body>
     </html>
   );

@@ -12,21 +12,21 @@ const CYCLE_DURATION_FOR_CLOCK_SEGMENTS = 60 * 60; // 60 minutes for the visual 
 interface CurrentPhaseInfo {
   name: 'Men' | 'Women' | 'No Entry';
   displayName: string;
-  statusColor: string;
+  statusColor: string; // Tailwind text color class
   nextPhaseName: 'Men' | 'Women' | 'No Entry';
   timeRemainingInPhase: number;
 }
 
 // Segments for the clock background, representing a 60-minute cycle
 const clockDisplaySegments = [
-  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--primary))' },       // Q1: Men
-  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-primary)' },           // Q1: No Entry
-  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--accent))' },        // Q2: Women
-  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-accent)' },            // Q2: No Entry
-  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--primary))' },       // Q3: Men
-  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-primary)' },           // Q3: No Entry
-  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--accent))' },        // Q4: Women
-  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-accent)' },            // Q4: No Entry
+  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--clock-man-color))' },       // Q1: Men
+  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-clock-man)' },           // Q1: No Entry (Man's slot)
+  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--clock-woman-color))' },    // Q2: Women
+  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-clock-woman)' },         // Q2: No Entry (Woman's slot)
+  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--clock-man-color))' },       // Q3: Men
+  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-clock-man)' },           // Q3: No Entry (Man's slot)
+  { duration: GENDER_SPECIFIC_SECONDS, fill: 'hsl(var(--clock-woman-color))' },    // Q4: Women
+  { duration: NO_ENTRY_SECONDS, fill: 'url(#stripes-clock-woman)' },         // Q4: No Entry (Woman's slot)
 ];
 
 
@@ -60,7 +60,7 @@ export default function ScheduleClock() {
 
       let phaseName: 'Men' | 'Women' | 'No Entry';
       let displayName: string;
-      let statusColor: string;
+      let statusColor: string; // This will be a Tailwind class like 'text-primary', 'text-accent', 'text-destructive'
       let nextPhaseName: 'Men' | 'Women' | 'No Entry';
       let timeRemainingInPhase: number;
 
@@ -71,19 +71,19 @@ export default function ScheduleClock() {
         if (currentQuarter === 0 || currentQuarter === 2) { // Men's turn
           phaseName = 'Men';
           displayName = 'MEN';
-          statusColor = 'text-primary';
+          statusColor = 'text-[hsl(var(--clock-man-color))]'; // Use clock-specific color variable
           nextPhaseName = 'No Entry';
         } else { // Women's turn
           phaseName = 'Women';
           displayName = 'WOMEN';
-          statusColor = 'text-accent';
+          statusColor = 'text-[hsl(var(--clock-woman-color))]'; // Use clock-specific color variable
           nextPhaseName = 'No Entry';
         }
       } else { // Last 5 minutes: No Entry
         timeRemainingInPhase = QUARTER_DURATION_SECONDS - secondsIntoQuarter;
         phaseName = 'No Entry';
         displayName = 'NO ENTRY';
-        statusColor = 'text-destructive font-semibold';
+        statusColor = 'text-destructive font-semibold'; // Uses the theme's destructive color
         // Determine next gender phase after "No Entry"
         if (currentQuarter === 0 || currentQuarter === 2) { // No Entry after Men's turn -> next is Women
           nextPhaseName = 'Women';
@@ -101,12 +101,9 @@ export default function ScheduleClock() {
   }, []);
 
   if (!currentTime || !currentPhaseInfo) {
-    // Render a placeholder or skeleton while waiting for client-side hydration
-    // This helps prevent hydration mismatches.
     return (
       <div className="flex flex-col items-center w-full max-w-xs sm:max-w-sm">
         <div className="relative w-52 h-52 sm:w-56 sm:h-56 mb-4 bg-muted/30 rounded-full animate-pulse">
-          {/* Placeholder for clock face */}
         </div>
         <div className="bg-card p-4 rounded-lg shadow-lg w-full text-center text-card-foreground">
           <div className="mb-2 h-6 bg-muted/40 rounded w-3/4 mx-auto animate-pulse"></div>
@@ -129,7 +126,6 @@ export default function ScheduleClock() {
   const minutesRemaining = Math.floor(currentPhaseInfo.timeRemainingInPhase / 60);
   const secondsRemaining = currentPhaseInfo.timeRemainingInPhase % 60;
 
-  // Clock hands rotation (standard 12-hour clock)
   const hourHandRotation = ((hours % 12 + minutes / 60) / 12) * 360;
   const minuteHandRotation = ((minutes + seconds / 60) / 60) * 360;
 
@@ -139,7 +135,7 @@ export default function ScheduleClock() {
   const segmentRingStrokeWidth = 28; 
   const pathRadius = segmentRingRadius;
   
-  let startAngleRad = -Math.PI / 2; // Start at 12 o'clock for segments
+  let startAngleRad = -Math.PI / 2; 
 
   const tickRadiusOuter = segmentRingRadius + segmentRingStrokeWidth / 2 + 2;
   const hourTickLength = 7; 
@@ -150,13 +146,13 @@ export default function ScheduleClock() {
       <div className="relative w-52 h-52 sm:w-56 sm:h-56 mb-4"> 
         <svg viewBox={`0 0 ${svgSize} ${svgSize}`} className="w-full h-full">
           <defs>
-            <pattern id="stripes-primary" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-              <rect width="6" height="6" fill="hsl(var(--primary))"></rect>
+            <pattern id="stripes-clock-man" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="hsl(var(--clock-man-color))"></rect>
               <path d="M 0 0 L 6 0" stroke="hsl(var(--primary-foreground))" strokeWidth="2.5" opacity="0.5"></path>
             </pattern>
-            <pattern id="stripes-accent" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-              <rect width="6" height="6" fill="hsl(var(--accent))"></rect>
-              <path d="M 0 0 L 6 0" stroke="hsl(var(--accent-foreground))" strokeWidth="2.5" opacity="0.5"></path>
+            <pattern id="stripes-clock-woman" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="hsl(var(--clock-woman-color))"></rect>
+              <path d="M 0 0 L 6 0" stroke="hsl(var(--primary-foreground))" strokeWidth="2.5" opacity="0.5"></path>
             </pattern>
           </defs>
           
@@ -169,8 +165,8 @@ export default function ScheduleClock() {
               <path
                 key={`segment-${index}`}
                 d={pathData}
-                fill="none" // Set fill to none for arc paths
-                stroke={segment.fill} // Use fill color for the stroke
+                fill="none"
+                stroke={segment.fill} 
                 strokeWidth={segmentRingStrokeWidth}
               />
             );
@@ -250,7 +246,7 @@ export default function ScheduleClock() {
 
       <div className="bg-card p-4 rounded-lg shadow-lg w-full text-center text-card-foreground">
         <div className="mb-2"> 
-          <span className="text-sm sm:text-md text-muted-foreground">Current Slot: </span>
+          <span className="text-sm sm:text-md text-muted-foreground">Current Status: </span>
           <span className={`text-lg sm:text-xl font-bold ${currentPhaseInfo.statusColor}`}>
             {currentPhaseInfo.displayName}
           </span>
@@ -264,10 +260,10 @@ export default function ScheduleClock() {
         
         <div className="flex justify-center items-center space-x-3 sm:space-x-4 text-xs sm:text-sm">
           <div className="flex items-center">
-            <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-sm bg-primary mr-1.5 sm:mr-2"></span>Men
+            <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-sm bg-[hsl(var(--clock-man-color))] mr-1.5 sm:mr-2"></span>Men
           </div>
           <div className="flex items-center">
-            <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-sm bg-accent mr-1.5 sm:mr-2"></span>Women
+            <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-sm bg-[hsl(var(--clock-woman-color))] mr-1.5 sm:mr-2"></span>Women
           </div>
           <div className="flex items-center">
             <span className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-sm bg-destructive mr-1.5 sm:mr-2"></span>No Entry
