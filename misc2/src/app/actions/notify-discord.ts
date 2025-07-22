@@ -22,8 +22,10 @@ export async function sendSosNotification(): Promise<{ success: boolean; message
     return { success: false, message: 'Server configuration error.' };
   }
   
-  // Bypass rate limit in development environments
-  if (process.env.NODE_ENV !== 'development') {
+  // Only apply rate limiting if Vercel KV environment variables are set.
+  const isRateLimiterConfigured = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+
+  if (isRateLimiterConfigured) {
     // Use IP address for rate limiting
     const ip = (await headers()).get('x-forwarded-for') ?? '127.0.0.1';
     const { success: isWithinRateLimit, limit, remaining, reset } = await ratelimit.limit(ip);
@@ -31,6 +33,11 @@ export async function sendSosNotification(): Promise<{ success: boolean; message
     if (!isWithinRateLimit) {
       const retryAfter = Math.ceil((reset - Date.now()) / 1000 / 60);
       return { success: false, message: `Rate limit exceeded. Please try again in about ${retryAfter} minutes.` };
+    }
+  } else {
+    // Log a warning in production if KV is not configured, but don't block the request.
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('Vercel KV for rate limiting is not configured. Skipping rate limit check.');
     }
   }
 
