@@ -7,92 +7,39 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarDays, ClockIcon, Zap, AlertTriangle } from 'lucide-react';
-import { differenceInSeconds } from 'date-fns';
 
 export default function PrayerTimesDisplay() {
   const [prayerData, setPrayerData] = useState<PrayerTimesData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [timeUntilNextPrayer, setTimeUntilNextPrayer] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Client-side error state
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      setError(null);
+      setError(null); // Clear previous client-side errors
       try {
         const data = await getPrayerTimes();
-        if (data.error) {
+        if (data.error) { // Check for error message from server action
           console.warn("Prayer times fetch error (from server action):", data.error);
-          setError(data.error);
+          setError(data.error); // Use error from server action
         }
         setPrayerData(data);
-      } catch (err) {
+      } catch (err) { // Catch client-side errors during fetch call itself
         console.error("Failed to fetch prayer times (client-side):", err);
         if (err instanceof Error) {
           setError(`Could not load prayer times: ${err.message}`);
         } else {
           setError("Could not load prayer times due to an unexpected client-side issue.");
         }
-        setPrayerData(null);
+        setPrayerData(null); // Ensure prayerData is null on client-side error
       } finally {
         setIsLoading(false);
       }
     }
     fetchData();
-    // const intervalId = setInterval(fetchData, 60 * 1000 * 5); // Refresh every 5 minutes REMOVED
-    // return () => clearInterval(intervalId); // REMOVED
+    const intervalId = setInterval(fetchData, 60 * 1000 * 5); // Refresh every 5 minutes
+    return () => clearInterval(intervalId);
   }, []);
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-
-    if (prayerData?.nextPrayer?.dateTime) {
-      const nextPrayerDateTime = new Date(prayerData.nextPrayer.dateTime); // Ensure it's a Date object client-side
-
-      const updateCountdown = () => {
-        const now = new Date();
-        
-        if (isNaN(nextPrayerDateTime.getTime())) {
-          setTimeUntilNextPrayer(prayerData.nextPrayer?.timeUntil || null);
-          if(intervalId) clearInterval(intervalId);
-          return;
-        }
-
-        const totalSecondsRemaining = differenceInSeconds(nextPrayerDateTime, now);
-
-        if (totalSecondsRemaining <= 0) {
-          setTimeUntilNextPrayer("Now!");
-          if (intervalId) clearInterval(intervalId);
-          // Optionally trigger a refetch or indicate prayer time has arrived
-          // setTimeout(fetchData, 2000); // Refetch after 2s for example - Consider implications if re-enabled
-          return;
-        }
-
-        const hours = Math.floor(totalSecondsRemaining / 3600);
-        const minutes = Math.floor((totalSecondsRemaining % 3600) / 60);
-        const seconds = totalSecondsRemaining % 60;
-
-        const parts = [];
-        if (hours > 0) parts.push(`${hours}h`);
-        if (minutes > 0) parts.push(`${minutes}m`);
-        parts.push(`${seconds}s`); // Always show seconds
-
-        setTimeUntilNextPrayer(parts.join(' '));
-      };
-
-      updateCountdown(); // Initial call
-      intervalId = setInterval(updateCountdown, 1000);
-    } else if (prayerData?.nextPrayer?.timeUntil) {
-      setTimeUntilNextPrayer(prayerData.nextPrayer.timeUntil); // Fallback to static string
-    } else {
-      setTimeUntilNextPrayer(null);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [prayerData?.nextPrayer?.dateTime, prayerData?.nextPrayer?.timeUntil]);
-
 
   if (isLoading) {
     return (
@@ -117,6 +64,7 @@ export default function PrayerTimesDisplay() {
     );
   }
 
+  // Display error state if client-side error OR server-action returned an error in prayerData
   if (error || (prayerData && prayerData.error && !prayerData.times?.length)) {
     return (
       <Card className="w-full max-w-sm bg-card shadow-xl rounded-lg">
@@ -133,6 +81,7 @@ export default function PrayerTimesDisplay() {
     );
   }
   
+  // If prayerData is null after loading (should be caught by above, but as a safeguard)
   if (!prayerData) {
      return (
       <Card className="w-full max-w-sm bg-card shadow-xl rounded-lg">
@@ -148,6 +97,7 @@ export default function PrayerTimesDisplay() {
     );
   }
 
+  // Display if successfully loaded but times array is empty and no specific error reported in prayerData.error
   if (prayerData.times.length === 0 && !prayerData.error) {
     return (
        <Card className="w-full max-w-sm bg-card shadow-xl rounded-lg text-card-foreground">
@@ -167,6 +117,7 @@ export default function PrayerTimesDisplay() {
       </Card>
     )
   }
+
 
   return (
     <Card className="w-full max-w-sm bg-card shadow-xl rounded-lg text-card-foreground">
@@ -216,9 +167,7 @@ export default function PrayerTimesDisplay() {
                  at {prayerData.nextPrayer.time}
               </p>
               <p className="text-2xs sm:text-xs text-muted-foreground/80">
-                {timeUntilNextPrayer === "Now!" 
-                  ? "Now!" 
-                  : `(in ${timeUntilNextPrayer || prayerData.nextPrayer.timeUntil})`}
+                ({prayerData.nextPrayer.timeUntil})
               </p>
             </div>
           )}
