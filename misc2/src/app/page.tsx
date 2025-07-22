@@ -15,7 +15,7 @@ export default async function HomePage() {
           FAU Erlangen-Nürnberg Prayer Room
         </h1>
         <p className="text-md sm:text-lg text-muted-foreground mt-2">
-          Technische Fakultät | Schedule & Prayer Times
+          Technische Fakultät | Slots & Prayer Times
         </p>
         <div className="mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-4">
           <AddToHomeScreenButton />
