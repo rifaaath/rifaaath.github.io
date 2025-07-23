@@ -15,11 +15,12 @@ const ratelimit = new Ratelimit({
 });
 
 export async function sendSosNotification(): Promise<{ success: boolean; message: string }> {
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  if (!webhookUrl) {
-    console.error('DISCORD_WEBHOOK_URL is not set in environment variables.');
-    return { success: false, message: 'Server configuration error.' };
+  if (!botToken || !chatId) {
+    console.error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set in environment variables.');
+    return { success: false, message: 'Server configuration error: Missing Telegram credentials.' };
   }
   
   // Only apply rate limiting if Vercel KV environment variables are set.
@@ -46,27 +47,32 @@ export async function sendSosNotification(): Promise<{ success: boolean; message
     const berlinTimeZone = 'Europe/Berlin';
     const now = new Date();
     const formattedDateTime = formatInTimeZone(now, berlinTimeZone, 'dd/MM/yyyy HH:mm:ss');
-    const messageContent = `🚨 Urgent assistance needed at the prayer room! ${formattedDateTime}`;
+    const messageText = `🚨 Urgent assistance needed at the prayer room! ${formattedDateTime}`;
 
-    const res = await fetch(webhookUrl, {
+    const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    
+    const res = await fetch(telegramApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        content: messageContent,
-        username: 'FAU Prayer Room Bot',
+        chat_id: chatId,
+        text: messageText,
+        parse_mode: 'HTML' // Or 'MarkdownV2' if you prefer
       }),
     });
 
-    if (!res.ok) {
-      console.error(`Discord webhook failed with status: ${res.status}`);
-      return { success: false, message: 'Failed to send notification.' };
+    const responseData = await res.json();
+
+    if (!responseData.ok) {
+      console.error(`Telegram API failed with error: ${responseData.description}`);
+      return { success: false, message: `Failed to send notification. (${responseData.description})` };
     }
 
-    return { success: true, message: 'Notification sent successfully!' };
+    return { success: true, message: 'Notification sent successfully to Telegram!' };
   } catch (error) {
-    console.error('Error sending Discord notification:', error);
+    console.error('Error sending Telegram notification:', error);
     return { success: false, message: 'An unexpected error occurred.' };
   }
 }

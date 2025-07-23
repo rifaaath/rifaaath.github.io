@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { sendSosNotification } from '@/app/actions/notify-discord';
+import { sendSosNotification } from '@/app/actions/notify';
 
 export default function SosButton() {
   const [isLoading, setIsLoading] = useState(false);
