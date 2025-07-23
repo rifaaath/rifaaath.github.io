@@ -14,7 +14,14 @@ const ratelimit = new Ratelimit({
   prefix: 'sos_ratelimit',
 });
 
-export async function sendSosNotification(): Promise<{ success: boolean; message: string }> {
+interface SosNotificationPayload {
+  name?: string;
+  comment?: string;
+}
+
+export async function sendSosNotification(
+  payload: SosNotificationPayload
+): Promise<{ success: boolean; message: string }> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -47,7 +54,17 @@ export async function sendSosNotification(): Promise<{ success: boolean; message
     const berlinTimeZone = 'Europe/Berlin';
     const now = new Date();
     const formattedDateTime = formatInTimeZone(now, berlinTimeZone, 'dd/MM/yyyy HH:mm:ss');
-    const messageText = `🚨 Urgent assistance needed at the prayer room! ${formattedDateTime}`;
+    
+    let messageText = `🚨 *Urgent Assistance Needed!* 🚨\n`;
+    messageText += `*Time:* ${formattedDateTime}\n\n`;
+
+    if (payload.name) {
+      messageText += `*From:* ${payload.name}\n`;
+    }
+    if (payload.comment) {
+      messageText += `*Comment:* \n${payload.comment}\n`;
+    }
+
 
     const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     
@@ -59,7 +76,7 @@ export async function sendSosNotification(): Promise<{ success: boolean; message
       body: JSON.stringify({
         chat_id: chatId,
         text: messageText,
-        parse_mode: 'HTML' // Or 'MarkdownV2' if you prefer
+        parse_mode: 'Markdown'
       }),
     });
 

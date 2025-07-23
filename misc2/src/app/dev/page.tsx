@@ -55,7 +55,7 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
           <SosButton />
           <p className="text-xs text-muted-foreground mt-6 max-w-sm">
             Clicking the SOS button will send a notification to the configured
-            Discord channel. Please use for testing purposes only.
+            Telegram channel. Please use for testing purposes only.
           </p>
         </div>
       </main>
