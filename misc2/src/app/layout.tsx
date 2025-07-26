@@ -3,6 +3,8 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { AppProviders } from './app-providers'; 
 import { IconPreferenceProvider } from '@/context/icon-preference-context';
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
   title: 'FAU Prayer Room',
@@ -38,6 +40,8 @@ export default function RootLayout({
         <AppProviders>
           <IconPreferenceProvider>
             {children}
+            <Analytics />
+            <SpeedInsights />
           </IconPreferenceProvider>
         </AppProviders>
       </body>
