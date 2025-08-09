@@ -167,3 +167,10 @@
 .animate-drift-fade-3 {
   animation: drift-fade-3 20s infinite linear alternate;
 }
+/* make the recaptcha challenge iframe forcibly topmost */
+iframe[src*="api2/bframe"],
+iframe[src*="api2/anchor"] {
+  position: fixed !important;
+  z-index: 2147483647 !important; /* very high */
+  pointer-events: auto !important;
+}
