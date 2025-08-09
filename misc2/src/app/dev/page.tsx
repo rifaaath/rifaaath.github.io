@@ -84,9 +84,9 @@ function DevPageContent() {
                       Please use for testing purposes only.
                   </p>
                   <div className="mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-4">
-                      <DirectionsDialog />
-                      <ThemeToggleButton />
                       <AddToHomeScreenButton />
+                      <DirectionsDialog /> 
+                      <ThemeToggleButton />
                   </div>
               </header>
               
@@ -100,14 +100,21 @@ function DevPageContent() {
               </div>
           </main>
           
-          <footer className="w-full flex flex-col items-center py-16 bg-background border-t border-border">
-            <SosButton />
-            <div className="text-center mt-8">
-              <p className="text-xs text-muted-foreground">
-                &copy; {new Date().getFullYear()} Developer Mode. <Link href="/" className="underline">Back to Home</Link>
-              </p>
-            </div>
-          </footer>
+          <footer className="text-center mt-10 mb-6 py-6">
+        <p className="text-xs text-muted-foreground">
+          <a className="flex items-center justify-center">
+            With 
+            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" className="mx-2" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1"></path></svg>
+            From MHG Erlangen
+          </a>        
+        </p>
+        <p className="text-2xs text-muted-foreground/70 mt-1">
+          Please note: Prayer times are scraped from Mawaqit.net and are for informational purposes. Schedule is based on 15-min slots.
+        </p>
+        <p className="text-sm text-gray-500 mt-6 italic"></p>
+        <SosButton />
+
+      </footer>
         </div>
     );
 }
