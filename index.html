@@ -1,497 +1,541 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./assets/css/styles.min.css" />
-    <!-- <link rel="icon" type="image/svg+xml" href="./assets/img/favicon.svg" /> -->
-    <link rel="icon" type="image/png" href="./assets/img/favicon.png" />
-    <link rel="stylesheet" href="https://use.typekit.net/kse0maf.css" />
-    <!-- Primary Meta Tags -->
-    <title>Rifaath Ameen | Master's Student in AI</title>
-    <meta
-      name="title"
-      content="Rifaath Ameen | Master's Student in AI"
-    />
-    <meta
-      name="Keywords"
-      content="Rifaath Ameen, Master's Student, AI, Germany, Artificial Intelligence, Machine Learning"
-    />
-    <meta
-      name="description"
-      content="Rifaath Ameen is a Master's Student in AI who enjoys learning new things and figuring stuff out along the way."
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="./assets/img/favicon.png" />
+  <title>Rifaath Ameen — AI Researcher</title>
+  <meta name="description" content="Rifaath Ameen — AI Master's student at FAU Erlangen-Nürnberg. Computer vision, generative AI, multimodal systems. Starting Master's Thesis at BMW Group (Jun 2026)." />
+  <meta property="og:title" content="Rifaath Ameen — AI Researcher" />
+  <meta property="og:description" content="AI Master's student specialising in computer vision, generative AI, and multimodal systems at FAU Erlangen-Nürnberg." />
+  <meta property="og:url" content="https://rifaaath.github.io" />
+  <meta name="google-site-verification" content="cNJbKL_VV2axQh6SB0NCLQ3fPinPYmsVJwYQC2WjHdg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <link rel="stylesheet" href="./assets/css/main.css" />
+</head>
+<body>
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://rifaaath.github.io" />
-    <meta
-      property="og:title"
-      content="Rifaath Ameen | Master's Student in AI"
-    />
-    <meta
-      property="og:description"
-      content="Rifaath Ameen is a Master's Student in AI who enjoys learning new things and figuring stuff out along the way."
-    />
-    <meta property="og:image" content="/assets/img/seo-img.png" />
+<!-- ═══════════════════════════════════════
+     CROSSHAIR CURSOR
+═══════════════════════════════════════ -->
+<div class="cursor" id="cursor">
+  <div class="cursor-dot"></div>
+  <div class="cursor-lines"></div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.0/gsap.min.js"></script>
+<!-- ═══════════════════════════════════════
+     INTRO OVERLAY
+═══════════════════════════════════════ -->
+<div id="intro">
+  <div class="intro-lines">
+    <div class="intro-line">Human-centered <strong>ideas</strong></div>
+    <div class="intro-line">powered by <em>AI</em></div>
+    <div class="intro-line">guided by <strong>curiosity.</strong></div>
+  </div>
+  <button id="intro-btn">EXPLORE</button>
+</div>
+<div id="slider-a"></div>
+<div id="slider-b"></div>
 
-    <!-- Google Verification tag -->
-    <meta name="google-site-verification" content="cNJbKL_VV2axQh6SB0NCLQ3fPinPYmsVJwYQC2WjHdg" />
-  </head>
-  <body class="body-wrap">
-    <div class="intro">
-      <div class="intro-text">
-        <h2 class="hide">
-          <span class="text">Human-centered ideas</span>
-        </h2>
-        <h2 class="hide">
-          <span class="text">powered by AI</span>
-        </h2>
-        <h2 class="hide">
-          <span class="text">guided by curiosity.</span>
-        </h2>
+<!-- ═══════════════════════════════════════
+     MAIN SITE
+═══════════════════════════════════════ -->
+<div id="site">
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a href="#hero" class="nav-logo">rifaath.ameen</a>
+    <ul class="nav-links">
+      <li><a href="#about"><span class="n">01.</span>About</a></li>
+      <li><a href="#experience"><span class="n">02.</span>Experience</a></li>
+      <li><a href="#research"><span class="n">03.</span>Research</a></li>
+      <li><a href="#skills"><span class="n">04.</span>Skills</a></li>
+      <li><a href="#contact"><span class="n">05.</span>Contact</a></li>
+    </ul>
+    <div class="nav-r">
+      <button id="theme-btn" title="Toggle theme">☀</button>
+      <a href="./assets/files/Rifaath_CV.pdf" class="resume-btn" target="_blank" rel="noopener">Resume ↗</a>
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
       </div>
-      <button class="intro-btn" onclick="fadeOut()">EXPLORE</button>
     </div>
-    <div class="slider"></div>
-    <div class="slider-2"></div>
-    <!-- custom mouse-->
-    <div class="cursor-effect"></div>
+  </nav>
 
-    <!-- content -->
-    <div class="content">
-      <!-- Header Section -->
-      <header>
-        <!-- Shapes -->
-        <div class="effect-wrap">
-          <div class="effect effect-1"></div>
-          <div class="effect effect-2">
-            <div></div><div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div><div></div>
+  <!-- MOBILE NAV -->
+  <div id="mob-nav">
+    <button id="mob-close">✕</button>
+    <a href="#about">About</a>
+    <a href="#experience">Experience</a>
+    <a href="#research">Research</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact">Contact</a>
+    <a href="./assets/files/Rifaath_CV.pdf" target="_blank" rel="noopener">Resume ↗</a>
+  </div>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════
+         01 · HERO
+    ═══════════════════════════════════════ -->
+    <section id="hero">
+      <div class="container">
+        <div class="hero-col">
+
+          <div class="hero-status fi">
+            <span class="sdot"></span>
+            Master's Thesis @ BMW Group starting Jun 2026
           </div>
-          <div class="effect effect-3"></div>
-          <div class="effect effect-4">
-            <div></div><div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div><div></div>
-          </div>
-        </div>
-        
-        <a href="index.html" class="logo" aria-label="Home">
-          <img src="./assets/img/favicon.svg" alt="Logo" />
-        </a>
-        <!-- <div class="inner">
-          <span>i</span>
-          <h1>Hello 👋</h1>
-          <p>
-            Thanks for visiting my Portfolio website! If you like what you see
-            and you need me to work on a project or research, send me a
-            <a href="#contact">message</a>
+
+          <div class="hero-greeting fi d1">Hi, I'm</div>
+          <h1 class="hero-name fi d1">Rifaath Ameen.</h1>
+          <div class="hero-role fi d2">AI Researcher &amp; <span>MS Student</span></div>
+
+          <p class="hero-desc fi d2">
+            Specialising in computer vision, generative AI, and multimodal systems
+            at FAU Erlangen-Nürnberg. I build real systems, learn from talented people,
+            and tackle problems that matter.
           </p>
-        </div> -->
 
-        <div class="social-icons">
-          <a href="https://linkedin.com/in/rifaathameen" aria-label="LinkedIn" title="LinkedIn Profile">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-            </svg>
+          <div class="hero-cta fi d3">
+            <a href="#research" class="btn-fill">View Research ↓</a>
+            <a href="#contact" class="btn-ghost">Get in touch</a>
+          </div>
+
+          <div class="hero-soc fi d4">
+            <!-- GitHub -->
+            <a href="https://github.com/rifaaath" class="soc" aria-label="GitHub" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            </a>
+            <!-- LinkedIn -->
+            <a href="https://linkedin.com/in/rifaathameen" class="soc" aria-label="LinkedIn" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+            <!-- Email -->
+            <a href="mailto:rifaathm.a@gmail.com" class="soc" aria-label="Email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </a>
+            <!-- Resume -->
+            <a href="./assets/files/Rifaath_CV.pdf" class="soc" aria-label="Download CV" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pose estimation skeleton -->
+      <div id="hero-visual">
+        <canvas id="skeleton-canvas"></canvas>
+        <div class="canvas-label">POSE ESTIMATION &nbsp;·&nbsp; COCO-17 &nbsp;·&nbsp; REAL-TIME</div>
+      </div>
+
+      <div class="scroll-hint">SCROLL</div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         02 · ABOUT
+    ═══════════════════════════════════════ -->
+    <section id="about">
+      <div class="container">
+        <div class="sh fi">
+          <span class="sh-num">01.</span>
+          <h2>About Me</h2>
+          <div class="sh-line"></div>
+        </div>
+        <div class="about-grid">
+          <div class="about-text">
+            <p class="fi"><span class="hi">Hello —</span> I'm Rifaath, an AI Master's student at FAU Erlangen-Nürnberg, Bavaria, Germany (GPA 1.4). My research sits at the intersection of computer vision, biomechanics, and multimodal AI — from building real-time pose-based surf maneuver classifiers to automating palaeographic analysis of 2,000-year-old papyri.</p>
+            <p class="fi d1">I'm a <span class="hi">Digital Tech Fellow</span> at FAU (1 of 21 from 200+ applicants) and currently a Graduate Research Assistant at the <span class="hi">Machine Learning &amp; Data Analytics Lab</span>, building a multi-modal pipeline for golf swing biomechanics using Vicon motion capture and TrackMan sensor data.</p>
+            <p class="fi d2">Starting <span class="hi">June 2026</span>, I'll be writing my Master's Thesis at <span class="hi">BMW Group</span>, working on Vision-Language Models and LLMs in an industry research setting.</p>
+            <p class="fi d2">Before Germany, I completed my B.E. in AI &amp; Machine Learning at NMAM Institute of Technology, Karnataka (CGPA 9.71), where my project <span class="hi">ACCENDIA</span> won Best Project of the Year and received an Indian patent.</p>
+            <p class="fi d3">Outside research: driving, photography, trekking, track-racing. Fluent in <span class="hi">Malayalam</span> (native), <span class="hi">English</span> (C1), and actively learning <span class="hi">German</span>.</p>
+          </div>
+          <div class="about-photo fi d1">
+            <img src="./assets/img/IMG_20210217_173633899-min.jpg" alt="Rifaath Ameen" class="about-img" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         03 · EXPERIENCE
+    ═══════════════════════════════════════ -->
+    <section id="experience">
+      <div class="container">
+        <div class="sh fi">
+          <span class="sh-num">02.</span>
+          <h2>Experience</h2>
+          <div class="sh-line"></div>
+        </div>
+        <div class="timeline">
+
+          <!-- BMW — upcoming -->
+          <div class="tl fi upcoming-marker">
+            <div class="tl-date">
+              Jun 2026<br/>— Present
+              <span class="upcoming">UPCOMING</span>
+            </div>
+            <div class="tl-body">
+              <div class="tl-role">Master's Thesis Researcher</div>
+              <div class="tl-company">BMW Group</div>
+              <ul>
+                <li>Master's Thesis in Vision-Language Models (VLM) and Large Language Models (LLM) in an industry research environment.</li>
+                <li>Focus: applied multimodal AI in the automotive and mobility domain.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- IDEA Lab TA -->
+          <div class="tl fi d1">
+            <div class="tl-date">Oct 2025<br/>— Present</div>
+            <div class="tl-body">
+              <div class="tl-role">Graduate Teaching Assistant</div>
+              <div class="tl-company">Image Data Exploration &amp; Analysis Lab (IDEA Lab), FAU Erlangen-Nürnberg</div>
+              <ul>
+                <li>Creating programming exercises on algorithms and data structures for the Algorithms, Programming and Data Representation lecture.</li>
+                <li>Coordinating with teaching staff and developing an automated evaluation system for instant feedback on student code submissions.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- MaD Lab -->
+          <div class="tl fi d2">
+            <div class="tl-date">Aug 2025<br/>— Present</div>
+            <div class="tl-body">
+              <div class="tl-role">Graduate Research Assistant</div>
+              <div class="tl-company">Machine Learning &amp; Data Analytics Lab, FAU Erlangen-Nürnberg</div>
+              <ul>
+                <li>Building a multi-modal biomechanics pipeline fusing Vicon motion capture, TrackMan ball-flight sensor data, and video across 10+ sessions.</li>
+                <li>Developing pose estimation tooling and mocap database infrastructure for open-source release.</li>
+                <li>Domain: Golf Swing Analysis &amp; Dataset Creation.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Arabian Calibration -->
+          <div class="tl fi d3">
+            <div class="tl-date">Jul 2023<br/>— Aug 2023</div>
+            <div class="tl-body">
+              <div class="tl-role">IT Audit Intern</div>
+              <div class="tl-company">Arabian Calibration Devices Rep. Co. LLC, Sharjah, UAE</div>
+              <ul>
+                <li>Conducted workflow analysis across 10+ departments, identifying 5 critical inefficiencies and delivering an AI automation roadmap projecting 30% reduction in manual processing time.</li>
+                <li>Audited existing security infrastructure and delivered prioritised recommendations for IoT integration and cybersecurity enhancements — 3 initiatives approved for immediate implementation.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Factweavers -->
+          <div class="tl fi d3">
+            <div class="tl-date">Jun 2023<br/>— Jul 2023</div>
+            <div class="tl-body">
+              <div class="tl-role">Intern — Automation &amp; Generative AI</div>
+              <div class="tl-company">Factweavers Technologies, Kerala, India</div>
+              <ul>
+                <li>Engineered a production-ready GPT-based API endpoint for automated content generation — ~80% reduction in creation time.</li>
+                <li>Benchmarked 6+ LLMs (GPT, BERT, T5) across 4 metrics to guide model selection for 2 client projects.</li>
+                <li>Enhanced retrieval efficiency with FAISS indexing, reducing search time by 25%.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         04 · RESEARCH
+    ═══════════════════════════════════════ -->
+    <section id="research">
+      <div class="container">
+        <div class="sh fi">
+          <span class="sh-num">03.</span>
+          <h2>Research &amp; Projects</h2>
+          <div class="sh-line"></div>
+        </div>
+        <div class="rg">
+
+          <!-- Surf -->
+          <div class="pc fi">
+            <div class="pc-top">
+              <span class="pc-lab">MaD Lab · FAU</span>
+              <div class="pc-gh"><a href="https://github.com/rifaaath" aria-label="GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a></div>
+            </div>
+            <div class="pc-name">Surf Maneuver Recognition</div>
+            <div class="pc-period">Oct 2025 — Apr 2026</div>
+            <p class="pc-desc">Professional surf judging is subjective and inconsistent. Built a two-stage real-time pipeline — RTMO pose extraction → temporal classification — on 146 WSL competition clips across 5 maneuver classes. Engineered a 75-channel biomechanical feature representation (COCO-17 keypoints + 24 kinematic signals: knee compression dynamics, CoM trajectory, torso rotation).</p>
+            <div class="pc-stats">
+              <span class="stat">Macro-F1: 0.31 → 0.64</span>
+              <span class="stat">TCN accuracy: 0.69</span>
+              <span class="stat">PoseFormerV2 F1: 0.655</span>
+            </div>
+            <div class="pc-tags">
+              <span class="ptag">RTMO</span><span class="ptag">TCN</span><span class="ptag">PoseFormerV2</span><span class="ptag">PyTorch</span><span class="ptag">Pose Estimation</span>
+            </div>
+          </div>
+
+          <!-- Glyph -->
+          <div class="pc fi d1">
+            <div class="pc-top">
+              <span class="pc-lab">PR Lab · FAU</span>
+              <div class="pc-gh"><a href="https://github.com/rifaaath" aria-label="GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a></div>
+            </div>
+            <div class="pc-name">Glyph Detection &amp; Writer ID — Ancient Greek Papyri</div>
+            <div class="pc-period">Mar 2025 — Dec 2025</div>
+            <p class="pc-desc">Automated palaeographic analysis hindered by lacunae, ink degradation, and absent labelled data. Adapted YOLOv8-Medium + SAHI tiling for 4000×4000px scans (34,478 glyphs, 94 writers). Diagnosed and corrected a source-library shortcut bias in SimCLR; pivoted to ResNet50 + Triplet Margin Loss with Batch-Hard Mining and SimpleVLAC aggregation.</p>
+            <div class="pc-stats">
+              <span class="stat">93.73% mAP</span>
+              <span class="stat">30% Top-1 zero-shot</span>
+              <span class="stat">34,478 glyphs · 94 writers</span>
+            </div>
+            <div class="pc-tags">
+              <span class="ptag">YOLOv8</span><span class="ptag">SAHI</span><span class="ptag">ResNet50</span><span class="ptag">Triplet Loss</span><span class="ptag">SimpleVLAC</span>
+            </div>
+          </div>
+
+          <!-- ORPHEUS -->
+          <div class="pc fi d2">
+            <div class="pc-top">
+              <span class="pc-lab">Ferienakademie 2025</span>
+              <div class="pc-gh"><a href="https://github.com/rifaaath" aria-label="GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a></div>
+            </div>
+            <div class="pc-name">ORPHEUS — AI Lecture Generation</div>
+            <div class="pc-period">Sep 2025 — Oct 2025</div>
+            <p class="pc-desc">Static lecture content fails to adapt to varying student expertise. Selected for Ferienakademie 2025 (FAU, TUM, Uni-Stuttgart). Implemented a RAG-based prompt engineering pipeline that dynamically adjusts lecture complexity, deployed via containerised microservices to the open-source community.</p>
+            <div class="pc-tags">
+              <span class="ptag">RAG</span><span class="ptag">LangChain</span><span class="ptag">Docker</span><span class="ptag">Prompt Engineering</span><span class="ptag">LLM</span>
+            </div>
+          </div>
+
+          <!-- ACCENDIA -->
+          <div class="pc fi d3">
+            <div class="pc-top">
+              <span class="pc-lab">Bachelor's Thesis · Patented</span>
+              <div class="pc-gh"><a href="https://github.com/rifaaath" aria-label="GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a></div>
+            </div>
+            <div class="pc-name">ACCENDIA — Private Q&amp;A over Documents</div>
+            <div class="pc-period">Aug 2023 — Apr 2024</div>
+            <p class="pc-desc">Retrieving specific information from large private document corpora is slow and error-prone. Built a private Q&amp;A system integrating GPT-3.5T and Gemini 1.5 Pro with FAISS-backed semantic search, enabling source-grounded answers across multi-document collections. Filed patent at the Indian Patent Office (Ref No. 202441036620). Awarded Best Project of the Year university-wide.</p>
+            <div class="pc-stats">
+              <span class="stat">~80% time reduction</span>
+              <span class="stat">Patent #202441036620</span>
+              <span class="stat">Best Project of the Year</span>
+            </div>
+            <div class="pc-tags">
+              <span class="ptag">RAG</span><span class="ptag">LangChain</span><span class="ptag">GPT-3.5T</span><span class="ptag">Gemini 1.5 Pro</span><span class="ptag">FAISS</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Earlier Work -->
+        <div style="margin-top: 2.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase;">Earlier Work</span>
+            <div style="flex: 1; height: 1px; background: var(--border); max-width: 200px;"></div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0.9rem;">
+
+            <div class="pc fi" style="padding: 1.25rem;">
+              <div class="pc-name" style="font-size: 0.88rem;">Heart Rate Detection via Motion Magnification</div>
+              <div class="pc-period">Mar 2023</div>
+              <p class="pc-desc" style="font-size: 0.8rem;">Built a motion magnification system to detect heart rate non-invasively from video using Eulerian video magnification and signal processing — improving remote health monitoring without contact sensors.</p>
+              <div class="pc-tags" style="margin-top: 0.75rem;"><span class="ptag">Computer Vision</span><span class="ptag">Signal Processing</span><span class="ptag">OpenCV</span></div>
+            </div>
+
+            <div class="pc fi d1" style="padding: 1.25rem;">
+              <div class="pc-name" style="font-size: 0.88rem;">Ship Segmentation &amp; Detection — Satellite Imagery</div>
+              <div class="pc-period">Nov 2022</div>
+              <p class="pc-desc" style="font-size: 0.8rem;">Built an R-CNN-based model to detect and segment ships in satellite images, targeting maritime surveillance and automated detection of illegal infractions at sea.</p>
+              <div class="pc-tags" style="margin-top: 0.75rem;"><span class="ptag">R-CNN</span><span class="ptag">Object Detection</span><span class="ptag">Satellite Imagery</span></div>
+            </div>
+
+            <div class="pc fi d2" style="padding: 1.25rem;">
+              <div class="pc-name" style="font-size: 0.88rem;">IoT Smart Attendance Tracking (RFID)</div>
+              <div class="pc-period">Nov 2022</div>
+              <p class="pc-desc" style="font-size: 0.8rem;">Designed an RFID-based automated attendance system with Arduino, MySQL, and PHP. Real-time tracking with a web dashboard — eliminating manual roll-call entirely.</p>
+              <div class="pc-tags" style="margin-top: 0.75rem;"><span class="ptag">RFID</span><span class="ptag">Arduino</span><span class="ptag">MySQL</span><span class="ptag">PHP</span></div>
+            </div>
+
+            <div class="pc fi d3" style="padding: 1.25rem;">
+              <div class="pc-name" style="font-size: 0.88rem;">Reverse Image Search Using CNN</div>
+              <div class="pc-period">Nov 2022</div>
+              <p class="pc-desc" style="font-size: 0.8rem;">Developed a CNN-powered visual search engine using ResNet50 feature extraction to retrieve visually similar images from a dataset — an early exploration of embedding-based retrieval.</p>
+              <div class="pc-tags" style="margin-top: 0.75rem;"><span class="ptag">ResNet50</span><span class="ptag">CNN</span><span class="ptag">Feature Extraction</span></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         05 · SKILLS
+    ═══════════════════════════════════════ -->
+    <section id="skills">
+      <div class="container">
+        <div class="sh fi">
+          <span class="sh-num">04.</span>
+          <h2>Technical Skills</h2>
+          <div class="sh-line"></div>
+        </div>
+        <div class="sg">
+          <div class="sc fi">
+            <div class="sc-name">Languages</div>
+            <div class="sp-wrap">
+              <span class="sp">Python</span><span class="sp">C++</span><span class="sp">C</span><span class="sp">Java</span><span class="sp">R</span>
+            </div>
+          </div>
+          <div class="sc fi d1">
+            <div class="sc-name">ML / DL</div>
+            <div class="sp-wrap">
+              <span class="sp">PyTorch</span><span class="sp">TensorFlow</span><span class="sp">Scikit-learn</span><span class="sp">OpenCV</span><span class="sp">YOLOv8</span><span class="sp">LangChain</span><span class="sp">HuggingFace</span>
+            </div>
+          </div>
+          <div class="sc fi d2">
+            <div class="sc-name">Tools &amp; Infra</div>
+            <div class="sp-wrap">
+              <span class="sp">Pandas</span><span class="sp">NumPy</span><span class="sp">Docker</span><span class="sp">Git</span><span class="sp">Linux</span><span class="sp">Bash</span>
+            </div>
+          </div>
+          <div class="sc fi d3">
+            <div class="sc-name">Databases</div>
+            <div class="sp-wrap">
+              <span class="sp">MySQL</span><span class="sp">PostgreSQL</span><span class="sp">MongoDB</span><span class="sp">FAISS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         06 · EDUCATION
+    ═══════════════════════════════════════ -->
+    <section id="education">
+      <div class="container">
+        <div class="sh fi">
+          <span class="sh-num">05.</span>
+          <h2>Education</h2>
+          <div class="sh-line"></div>
+        </div>
+        <div class="eg">
+          <div class="ec fi">
+            <div class="ec-badge">M.Sc. &nbsp;·&nbsp; Oct 2024 — Present</div>
+            <div class="ec-school">FAU Erlangen-Nürnberg</div>
+            <div class="ec-prog">Artificial Intelligence &nbsp;·&nbsp; Bavaria, Germany</div>
+            <div class="ec-meta">
+              <div class="em"><span class="em-l">GPA</span><span class="em-v">1.4</span></div>
+              <div class="em"><span class="em-l">Fellowship</span><span class="em-v">Digital Tech Fellow</span></div>
+              <div class="em"><span class="em-l">Focus</span><span class="em-v">Computer Vision &amp; GenAI</span></div>
+            </div>
+          </div>
+          <div class="ec fi d1">
+            <div class="ec-badge">B.E. &nbsp;·&nbsp; Oct 2020 — Sep 2024</div>
+            <div class="ec-school">NMAM Institute of Technology</div>
+            <div class="ec-prog">AI &amp; Machine Learning &nbsp;·&nbsp; Karnataka, India</div>
+            <div class="ec-meta">
+              <div class="em"><span class="em-l">CGPA</span><span class="em-v">9.71 / 10.00</span></div>
+              <div class="em"><span class="em-l">Award</span><span class="em-v">Best Project of the Year</span></div>
+              <div class="em"><span class="em-l">Role</span><span class="em-v">Branch Captain</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         07 · ACHIEVEMENTS
+    ═══════════════════════════════════════ -->
+    <section id="achievements">
+      <div class="container">
+        <div class="sh fi">
+          <span class="sh-num">06.</span>
+          <h2>Achievements</h2>
+          <div class="sh-line"></div>
+        </div>
+        <div class="al">
+          <div class="ai fi">
+            <div class="ai-icon">🏅</div>
+            <div class="ai-body">
+              <h4>Digital Tech Fellow, FAU Erlangen-Nürnberg</h4>
+              <p>Selected as 1 of 21 from 200+ applicants. Invited as Resource Person for a Faculty Development Programme on LangChain, OpenAI, and the Future of Computer Vision &amp; ML.</p>
+            </div>
+          </div>
+          <div class="ai fi d1">
+            <div class="ai-icon">🎓</div>
+            <div class="ai-body">
+              <h4>Ferienakademie 2025 — Selected Participant</h4>
+              <p>Selected for the prestigious summer academy (FAU, TUM, Uni-Stuttgart) for the ORPHEUS AI lecture generation project.</p>
+            </div>
+          </div>
+          <div class="ai fi d2">
+            <div class="ai-icon">📜</div>
+            <div class="ai-body">
+              <h4>Indian Patent — ACCENDIA (Ref No. 202441036620)</h4>
+              <p>Patent filed and published at the Indian Patent Office for a private multi-document Q&amp;A system using RAG and multi-LLM support.</p>
+            </div>
+          </div>
+          <div class="ai fi d3">
+            <div class="ai-icon">🏆</div>
+            <div class="ai-body">
+              <h4>Hackathon &amp; Competition Awards</h4>
+              <p>Finalist — HackOverflow 1.0 (National) &nbsp;·&nbsp; 2nd — Byte Battle (ACM &amp; HackerEarth Hub NMAMIT) &nbsp;·&nbsp; 2nd — MATRIX Coding Contest &nbsp;·&nbsp; 2nd — NMAMIT Circuit 03 &nbsp;·&nbsp; 3rd — WKND.HACK (IEEE) &nbsp;·&nbsp; 3× Winner — NMAMIT Coding Contest &nbsp;·&nbsp; Best Working Model — NIMS Dubai</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         08 · CONTACT
+    ═══════════════════════════════════════ -->
+    <section id="contact">
+      <div class="container">
+        <div class="ct-tag fi">What's Next?</div>
+        <h2 class="ct-h fi d1">Let's Collaborate.</h2>
+        <p class="ct-sub fi d2">Whether it's research, an internship, a project, or just a conversation about AI — my inbox is always open.</p>
+        <a href="mailto:rifaathm.a@gmail.com" class="ct-email fi d3">rifaathm.a@gmail.com</a>
+        <div class="ct-links fi d4">
+          <a href="https://linkedin.com/in/rifaathameen" class="ct-lnk" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
           </a>
-          <a href="https://github.com/rifaaath" aria-label="GitHub" title="GitHub Profile">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-            </svg>
+          <a href="https://github.com/rifaaath" class="ct-lnk" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
           </a>
-          <a href="/assets/files/Rifaath_CV.pdf" aria-label="Resume" title="Download Resume">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
-              <path d="M9 13h6v1H9zm0 3h6v1H9zm0-6h2v1H9z"/>
-            </svg>
+          <a href="https://wa.me/4917629958597" class="ct-lnk" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            WhatsApp
           </a>
         </div>
+      </div>
+    </section>
 
-        <div class="toggle-container">
-          <input type="checkbox" id="switch" name="theme" /><label
-            class="toggle"
-            for="switch"
-            >Toggle</label
-          >
-        </div>
+  </main>
 
-        <div class="landing-text">
-          <h1>Rifaath Ameen</h1>
-          <p>
-            Master's student in AI who enjoys learning new things and figuring stuff out along the way.
-            <i>Always up for a challenge, and excited to grow by exploring different ideas and working with others.</i>
-          </p>
-        </div>
-      </header>
-
-      <main>
-        <!-- About Section -->
-        <section class="about" id="about">
-          <div class="container">
-            <div class="profile-img">
-              <img
-                src="./assets/img/IMG_20210217_173633899-min.jpg"
-                alt="Rifaath Ameen"
-              />
-            </div>
-            <div class="about-content">
-              <div class="about-heading">
-                <h2>About Me</h2>
-              </div>
-              <p>
-                Hello there, I'm Rifaath Mohamed Ameen - a Master's student in Artificial Intelligence at FAU Erlangen-Nürnberg, Bavaria, Germany. With a passion for AI, machine learning, and problem-solving, I'm constantly seeking new challenges and opportunities to grow.
-                <br />
-                <br />
-                I graduated with a Bachelor's degree in Artificial Intelligence and Machine Learning from NMAM Institute of Technology, Karnataka, India, with First Class Honors. Throughout my academic journey, I've worked on several research projects, including ACCENDIA, which was awarded "Best Project of the Year" and has a patent filed at the Indian Patent Office.
-                <br />
-                <br />
-                I've gained practical experience through internships at Arabian Calibration Devices Rep. Co. LLC and Factweavers Technologies, where I worked on AI-based automation solutions and generative AI technologies. My technical skills include Python, C++, Java, and various ML/AI frameworks such as TensorFlow, Scikit-learn, and OpenCV.
-                <br />
-                <br />
-                Beyond academics, I've held leadership positions including Branch Captain at NMAM Institute of Technology and currently serve as a People & Culture Executive at START Nuremberg. When I'm not coding or researching, you can find me driving, photography, trekking, or track-racing.
-              </p>
-
-              <div class="about-cta">
-                <a href="#contact" class="skills-cta">Contact Me</a>
-                <span>—</span>
-                <a href="/about" class="exp-cta">More about me</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Services Section -->
-        <section class="services" id="services">
-          <div class="container">
-            <div class="services-content">
-              <div class="services-heading">
-                <h2>My Skills & Expertise</h2>
-              </div>
-            </div>
-            <div class="service-item-container">
-              <div class="service-item">
-                <ion-icon name="code-slash-outline"></ion-icon>
-                <h5>Machine Learning & AI</h5>
-                <p>
-                  I work with various ML/AI frameworks and libraries including TensorFlow, Scikit-learn, NLTK, and OpenCV to develop intelligent solutions for complex problems.
-                </p>
-              </div>
-              <div class="service-item">
-                <ion-icon name="analytics-outline"></ion-icon>
-                <h5>Data Analytics</h5>
-                <p>
-                  I specialize in data analysis and visualization using tools such as Pandas, NumPy, Matplotlib, and Plotly to extract valuable insights from complex datasets.
-                </p>
-              </div>
-              <div class="service-item">
-                <ion-icon name="server-outline"></ion-icon>
-                <h5>Database Management</h5>
-                <p>
-                  I'm experienced in working with various database systems including MySQL, PostgreSQL, and MongoDB for efficient data storage and retrieval.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Education Section -->
-        <section id="education" class="project">
-          <h5>— my academic journey</h5>
-          <h2>Education 🎓</h2>
-          <div class="service-item-container">
-            <div class="service-item">
-              <ion-icon name="school-outline"></ion-icon>
-              <h5>FAU Erlangen-Nürnberg, Bavaria, Germany</h5>
-              <p>
-                M.Sc. in Artificial Intelligence<br>
-                Oct. 2024 – Present
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="school-outline"></ion-icon>
-              <h5>NMAM Institute of Technology, Karnataka, India</h5>
-              <p>
-                B.E. in Artificial Intelligence and Machine Learning<br>
-                Oct. 2020 – Sep. 2024
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Experience Section -->
-        <section id="experience" class="project">
-          <h5>— professional background</h5>
-          <h2>Work Experience 💼</h2>
-          <div class="service-item-container">
-            <div class="service-item">
-              <ion-icon name="briefcase-outline"></ion-icon>
-              <h5>Arabian Calibration Devices Rep. Co. LLC, Sharjah, UAE</h5>
-              <p>
-                <strong>IT Audit Intern</strong><br>
-                Jul. 2023 - Aug. 2023<br>
-                • Interviewed 10+ department heads and staff to identify workflow inefficiencies<br>
-                • Proposed AI-based automation solutions<br>
-                • Provided recommendations for enhancing security measures and improving overall efficiency
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="briefcase-outline"></ion-icon>
-              <h5>Factweavers Technologies Private Limited, Kerala, India</h5>
-              <p>
-                <strong>AI Intern – Automation & Generative AI</strong><br>
-                Jun. 2023 - Jul. 2023<br>
-                • Developed an API endpoint utilizing generative AI to automate business processes<br>
-                • Conducted extensive research on multiple pre-trained LLMs<br>
-                • Enhanced content retrieval efficiency by integrating FAISS indexing, reducing search time by 25%
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Projects Section -->
-        <section id="projects" class="project">
-          <h5>— check out some</h5>
-          <h2>Research & Projects 💻</h2>
-          <div class="project-item-container">
-            <div class="project-box">
-              <div class="project-box__content">
-                <h3>ACCENDIA - Patent Research Project</h3>
-                <h5>LangChain • RAG • Multi-LLM • Aug. 2023 - Apr. 2024</h5>
-                <p>• Implemented a multi-document query system using RAG and LangChain with multi-LLM support<br>
-                   • Patent filed and published at the Indian Patent Office (Ref No.: 202441036620)<br>
-                   • Awarded "Best Project of the Year" for the institution</p>
-              </div>
-            </div>
-
-            <div class="project-box">
-              <div class="project-box__content">
-                <h3>Heart Rate Detection using Motion Magnification</h3>
-                <h5>Computer Vision • Signal Processing • Mar. 2023</h5>
-                <p>• Built a motion magnification system to detect heart rate from video<br>
-                   • Improved remote health monitoring capabilities</p>
-              </div>
-            </div>
-
-            <div class="project-box">
-              <div class="project-box__content">
-                <h3>Ship Segmentation and Detection using Satellite Imagery</h3>
-                <h5>R-CNN • Computer Vision • Nov. 2022</h5>
-                <p>• Built an R-CNN-based model to detect and segment ships in satellite images<br>
-                   • Aimed at improving maritime surveillance and detecting illegal infractions at sea</p>
-              </div>
-            </div>
-
-            <div class="project-box">
-              <div class="project-box__content">
-                <h3>IoT Enabled Smart Attendance Tracking</h3>
-                <h5>RFID • Arduino • MySQL • PHP • Nov. 2022</h5>
-                <p>• Designed an RFID-based automated attendance system<br>
-                   • Implemented real-time tracking functionality</p>
-              </div>
-            </div>
-
-            <div class="project-box">
-              <div class="project-box__content">
-                <h3>Reverse Image Search Using CNN</h3>
-                <h5>ResNet50 • Computer Vision • Nov. 2022</h5>
-                <p>• Developed a CNN-powered search engine using ResNet50<br>
-                   • Built to retrieve visually similar images from a dataset</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Achievements Section -->
-        <section id="achievements" class="project">
-          <h5>— proud moments</h5>
-          <h2>Achievements & Awards 🏆</h2>
-          <div class="service-item-container">
-            <div class="service-item">
-              <ion-icon name="trophy-outline"></ion-icon>
-              <h5>Academic & Professional</h5>
-              <p>
-                • Selected for the Digital Tech Fellow program at FAU (21 out of 200 applicants)<br>
-                • Best Project of the Year for ACCENDIA<br>
-                • Invited Resource Person for Faculty Development Program on LangChain, OpenAI, and the Future of Computer Vision & ML
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="medal-outline"></ion-icon>
-              <h5>Hackathons & Competitions</h5>
-              <p>
-                • Finalist – HackOverflow 1.0 (National Hackathon)<br>
-                • 2nd Place – Byte Battle (ACM NMAMIT & HackerEarth Hub NMAMIT)<br>
-                • 2nd Place – MATRIX Coding Contest (CSI NMAMIT)<br>
-                • 2nd Place – NMAMIT Circuit 03 Hackathon<br>
-                • 3rd Place – WKND.HACK (IEEE STB 34551, NMAMIT)<br>
-                • Three-time Winner – NMAMIT Coding Contest<br>
-                • Best Working Model – Science Exhibition, NIMS Dubai
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Leadership Section -->
-        <section id="leadership" class="project">
-          <h5>— taking initiative</h5>
-          <h2>Leadership Experience 👑</h2>
-          <div class="service-item-container">
-            <div class="service-item">
-              <ion-icon name="people-outline"></ion-icon>
-              <h5>People & Culture Executive</h5>
-              <p>
-                START Nuremberg<br>
-                Oct. 2024 – Present
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="business-outline"></ion-icon>
-              <h5>Student Placement Overall Head</h5>
-              <p>
-                Dept. of Placements & Training, NMAMIT<br>
-                Sep. 2023 – Aug. 2024
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="flag-outline"></ion-icon>
-              <h5>Branch Captain</h5>
-              <p>
-                NMAM Institute of Technology, Nitte<br>
-                Sep. 2023 – Present
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="document-text-outline"></ion-icon>
-              <h5>Secretary</h5>
-              <p>
-                NMAM Institute of Technology, Nitte<br>
-                Oct. 2022 – Sep. 2023
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="laptop-outline"></ion-icon>
-              <h5>Third Year Representative</h5>
-              <p>
-                HackerEarth Hub, NMAMIT<br>
-                Dec. 2022 – Sep. 2023
-              </p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="ribbon-outline"></ion-icon>
-              <h5>House Captain</h5>
-              <p>
-                Gulf Asian English School<br>
-                2019 – 2020
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Skills Section -->
-        <section id="skills" class="project">
-          <h5>— what I can do</h5>
-          <h2>Technical Skills 💪</h2>
-          <div class="service-item-container">
-            <div class="service-item">
-              <ion-icon name="code-outline"></ion-icon>
-              <h5>Languages</h5>
-              <p>Python, C++, C, Java, R, AppScript</p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="server-outline"></ion-icon>
-              <h5>Databases</h5>
-              <p>MySQL, PostgreSQL, MongoDB</p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="bulb-outline"></ion-icon>
-              <h5>ML/AI</h5>
-              <p>TensorFlow, Scikit-learn, Natural Language Tool Kit, OpenCV</p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="analytics-outline"></ion-icon>
-              <h5>Data Analytics</h5>
-              <p>Pandas, NumPy, Matplotlib, Plotly, MySQL, Beautiful Soup</p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="construct-outline"></ion-icon>
-              <h5>Miscellaneous</h5>
-              <p>Git, Selenium, Linux, Bash, PowerShell, FAISS, OpenAI API</p>
-            </div>
-            <div class="service-item">
-              <ion-icon name="language-outline"></ion-icon>
-              <h5>Languages</h5>
-              <p>Malayalam (Native), English (C1), German (Beginner)</p>
-            </div>
-          </div>
-        </section>
-
-        <!--Contacts-->
-        <section class="contact" id="contact">
-          <div class="contact-title">
-            <h5>— contact me</h5>
-            <h2>🚀Let's collaborate </h2>
-          </div>
-          <div class="container">
-            <div class="sub">
-              Got a question, proposal, research idea, or want to work <br />
-              together on something? Feel free to reach out.
-            </div>
-            <!-- <form action="https://docs.google.com/forms/d/e/1FAIpQLScwXOR3e0vAOjyepTwNqPplB3L7kEd3e8_ggNgtMqtGP50mQw/formResponse" method="POST">
-              <input type="text" name="entry.889706284" placeholder="Your Name" required>
-              <input type="email" name="entry.1835881387" placeholder="Your Email" required>
-              <textarea name="entry.2068091725" placeholder="Your Message" required></textarea>
-              <button type="submit">Send Message</button>
-            </form> -->
-          </div>
-        </section>
-      </main>
-
-      <footer class="footer">
-        <hr />
-        <div class="footer-head">
-          <h5>Say Hello</h5>
-          <div class="link-container">
-            <div class="footer-links">
-              <p
-                ><a
-                  data-text="wa.me/rifaathameen"
-                  href="https://wa.me/+971561487781"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >wa.me/rifaathameen</a
-                ></p
-              >
-              <p
-                ><a
-                  data-text="rifaathm.a@gmail.com"
-                  href="mailto:rifaathm.a@gmail.com"
-                  >rifaathm.a@gmail.com</a
-                ></p
-              >
-            </div>
-            <div class="footer-links">
-              <p><a href="https://linkedin.com/in/rifaathameen">LinkedIn</a></p>
-              <p><a href="https://github.com/rifaaath">GitHub</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="footer-copy"> © Rifaath Ameen 2025</div>
-      </footer>
+  <footer>
+    <div class="fc">Designed &amp; built from scratch &nbsp;·&nbsp; © Rifaath Ameen 2026</div>
+    <div class="fl">
+      <a href="https://github.com/rifaaath" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/rifaathameen" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="./assets/files/Rifaath_CV.pdf" target="_blank" rel="noopener">Resume</a>
     </div>
-    <script
-      type="module"
-      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
-    ></script>
-    <script
-      nomodule
-      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
-    ></script>
-    <script src="./assets/js/app.js"></script>
-  </body>
+  </footer>
+
+</div><!-- #site -->
+
+<script src="./assets/js/app.js"></script>
+</body>
 </html>

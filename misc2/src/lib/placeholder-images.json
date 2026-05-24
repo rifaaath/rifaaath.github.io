@@ -1,0 +1,70 @@
+{
+  "placeholderImages": [
+    {
+      "id": "home-hero",
+      "description": "A diverse group of Muslim students smiling and talking in a university courtyard.",
+      "imageUrl": "https://images.unsplash.com/photo-1712249239085-2161afc54d60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bXVzbGltJTIwc3R1ZGVudHN8ZW58MHx8fHwxNzYxNDkzODcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "muslim students"
+    },
+    {
+      "id": "about-mission",
+      "description": "Students collaborating on a project in a modern library.",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-9c1bafe0f436?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjb21tdW5pdHklMjBjb2xsYWJvcmF0aW9ufGVufDB8fHx8MTc2MTQ5Mzg3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "community collaboration"
+    },
+    {
+      "id": "team-member-1",
+      "description": "Headshot of a smiling young man.",
+      "imageUrl": "https://images.unsplash.com/photo-1650153265880-889a8b60a10b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzYxMzkzODUzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student portrait"
+    },
+    {
+      "id": "team-member-2",
+      "description": "Headshot of a smiling young woman wearing a hijab.",
+      "imageUrl": "https://images.unsplash.com/photo-1561065533-316e3142d586?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzYxMzkzODUzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student portrait"
+    },
+    {
+      "id": "team-member-3",
+      "description": "Headshot of a smiling student.",
+      "imageUrl": "https://images.unsplash.com/photo-1517256673644-36ad11246d21?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzYxMzkzODUzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student portrait"
+    },
+    {
+      "id": "event-1",
+      "description": "A guest speaker giving a lecture to an attentive audience.",
+      "imageUrl": "https://images.unsplash.com/photo-1683438049760-6fab2112f25a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxsZWN0dXJlJTIwYXVkaWVuY2V8ZW58MHx8fHwxNzYxNDkzODcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lecture audience"
+    },
+    {
+      "id": "event-2",
+      "description": "People enjoying food and conversation at a community potluck.",
+      "imageUrl": "https://images.unsplash.com/photo-1721180672611-eb0489be150f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y29tbXVuaXR5JTIwZGlubmVyfGVufDB8fHx8MTc2MTQ5Mzg3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "community dinner"
+    },
+    {
+      "id": "event-3",
+      "description": "A group of volunteers planting trees in a park.",
+      "imageUrl": "https://images.unsplash.com/photo-1633975531445-94aa5f8d5a26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx2b2x1bnRlZXJzJTIwcGxhbnRpbmd8ZW58MHx8fHwxNzYxNDkzODcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "volunteers planting"
+    },
+    {
+      "id": "event-4",
+      "description": "Students studying together in a circle.",
+      "imageUrl": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzdHVkeSUyMGdyb3VwfGVufDB8fHx8MTc2MTQxMTUyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "study group"
+    },
+    {
+      "id": "blog-post-1",
+      "description": "An open book with a pen on top of it.",
+      "imageUrl": "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxib29rJTIwcGVufGVufDB8fHx8MTc2MTQxMzI4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book pen"
+    },
+    {
+      "id": "blog-post-2",
+      "description": "A person typing on a laptop in a cafe.",
+      "imageUrl": "https://images.unsplash.com/photo-1707670467256-895dd77f54ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsYXB0b3AlMjB3cml0aW5nfGVufDB8fHx8MTc2MTQ5Mzg3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop writing"
+    }
+  ]
+}
