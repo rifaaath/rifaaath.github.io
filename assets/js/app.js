@@ -1,6 +1,6 @@
 /* ============================================================
    RIFAATH AMEEN — PORTFOLIO JS
-   Crosshair cursor · GSAP intro · COCO-17 skeleton canvas
+   Crosshair cursor · GSAP intro · cabin failure-search canvas
    Scroll animations · Theme toggle · Mobile nav · Nav hide
    ============================================================ */
 
@@ -98,7 +98,11 @@
   document.querySelectorAll('.fi').forEach(el => io.observe(el));
 
   /* ──────────────────────────────────────────
-     COCO-17 SKELETON CANVAS
+     PARAMETERIZED CABIN FAILURE-SEARCH (BLENDER SIM)
+     A synthetic in-cabin scene is procedurally perturbed;
+     a search climbs toward configurations that are most
+     likely to break the monitoring model, viewed through a
+     120° camera mounted below the rear-view mirror.
   ────────────────────────────────────────── */
   const canvas = document.getElementById('skeleton-canvas');
   if (canvas) {
@@ -112,42 +116,19 @@
     const ctx = canvas.getContext('2d');
     ctx.scale(DPR, DPR);
 
-    /* COCO-17 skeleton connections */
-    const CONN = [
-      [0,1],[0,2],[1,3],[2,4],         // head
-      [5,6],                            // shoulders
-      [5,7],[7,9],                      // left arm
-      [6,8],[8,10],                     // right arm
-      [5,11],[6,12],[11,12],            // torso
-      [11,13],[13,15],                  // left leg
-      [12,14],[14,16],                  // right leg
-    ];
+    const SEARCH_MS = 3200;
+    const FOUND_MS  = 1700;
+    const RESET_MS  = 320;
+    const ITER_MS   = 260;
 
-    /* 3 poses: [x, y] normalised 0–1 */
-    const POSES = [
-      /* Standing neutral */
-      [[.50,.07],[.52,.06],[.48,.06],[.55,.07],[.45,.07],
-       [.61,.21],[.39,.21],[.66,.35],[.34,.35],[.63,.49],[.37,.49],
-       [.57,.54],[.43,.54],[.58,.71],[.42,.71],[.57,.89],[.43,.89]],
-
-      /* Arms raised */
-      [[.50,.07],[.52,.06],[.48,.06],[.55,.07],[.45,.07],
-       [.61,.21],[.39,.21],[.72,.13],[.28,.13],[.76,.03],[.24,.03],
-       [.57,.54],[.43,.54],[.58,.71],[.42,.71],[.57,.89],[.43,.89]],
-
-      /* Surf / dynamic */
-      [[.43,.22],[.44,.20],[.41,.21],[.47,.21],[.38,.22],
-       [.34,.30],[.57,.28],[.22,.20],[.67,.37],[.16,.12],[.73,.45],
-       [.40,.50],[.54,.48],[.32,.64],[.61,.60],[.30,.80],[.65,.75]],
-    ];
-
-    const HOLD_MS  = 2600;
-    const TRANS_MS = 1900;
-    let poseIdx  = 0;
-    let phase    = 'hold';   // 'hold' | 'trans'
-    let elapsed  = 0;
-    let prevTs   = null;
-    let frame    = 0;
+    let stage        = 'search'; // 'search' | 'found' | 'reset'
+    let stageElapsed = 0;
+    let lastIterAt   = 0;
+    let iter         = 0;
+    let failScore    = 0.12;
+    let cfg          = { headYaw: 0, seatTilt: 0, occX: 0, occY: 0 };
+    let prevTs       = null;
+    let frame        = 0;
 
     function drawGrid() {
       ctx.strokeStyle = 'rgba(255,255,255,0.028)';
@@ -159,99 +140,197 @@
       for (let y = 0; y <= CH; y += step) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CW, y); ctx.stroke();
       }
-      /* Corner labels */
-      ctx.fillStyle = 'rgba(0,229,255,0.18)';
-      ctx.font = `${9 / DPR * DPR}px JetBrains Mono, monospace`;
+    }
+
+    function rr(x, y, w, h, r) {
+      if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+      ctx.rect(x, y, w, h);
+    }
+
+    function drawCabin(c, alpha) {
+      const top = 0.06 * CH, bottom = 0.74 * CH;
+      const left = 0.07 * CW, right = 0.93 * CW;
+
+      /* Wide-angle (120°) lens frame */
+      ctx.strokeStyle = `rgba(255,255,255,${0.10 * alpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left + 18, top);
+      ctx.lineTo(right - 18, top);
+      ctx.quadraticCurveTo(right + 12, (top + bottom) / 2, right - 18, bottom);
+      ctx.lineTo(left + 18, bottom);
+      ctx.quadraticCurveTo(left - 12, (top + bottom) / 2, left + 18, top);
+      ctx.stroke();
+
+      /* Camera marker — below rear-view mirror */
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(251,146,60,${0.85 * alpha})`;
+      ctx.arc((left + right) / 2, top + 2, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      /* Dash line */
+      ctx.strokeStyle = `rgba(0,229,255,${0.3 * alpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left + 8, top + 20);
+      ctx.lineTo(right - 8, top + 20);
+      ctx.stroke();
+
+      /* Steering wheel, partial */
+      const swX = left + 50, swY = top + 32, swR = 32;
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(0,229,255,${0.35 * alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.arc(swX, swY, swR, Math.PI * 0.15, Math.PI * 1.55);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(swX, swY);
+      ctx.lineTo(swX, swY + swR * 0.85);
+      ctx.stroke();
+
+      /* Seat — position/tilt shift with search parameters */
+      const seatCX = (left + right) / 2 + c.occX * CW;
+      const seatTopY = top + 86;
+      ctx.save();
+      ctx.translate(seatCX, seatTopY + 70);
+      ctx.rotate(c.seatTilt * Math.PI / 180 * 0.18);
+      ctx.strokeStyle = `rgba(255,255,255,${0.26 * alpha})`;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); rr(-46, -86, 92, 150, 14); ctx.stroke();
+      ctx.beginPath(); rr(-28, -112, 56, 32, 9); ctx.stroke();
+      ctx.restore();
+
+      /* Occupant head — yaw + offset are search parameters */
+      const headX = seatCX;
+      const headY = seatTopY + c.occY * CH;
+      const yaw = c.headYaw * Math.PI / 180;
+      ctx.save();
+      ctx.translate(headX, headY);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(0,229,255,${0.12 * alpha})`;
+      ctx.ellipse(0, 0, Math.max(10, 20 * Math.cos(yaw)), 23, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(0,229,255,${0.7 * alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      /* Gaze vector */
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.sin(yaw) * 38, -4);
+      ctx.strokeStyle = `rgba(251,146,60,${0.55 * alpha})`;
+      ctx.stroke();
+      ctx.restore();
+
+      /* Torso + seatbelt */
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(255,255,255,${0.22 * alpha})`;
+      ctx.lineWidth = 1.4;
+      rr(seatCX - 32, headY + 22, 64, 86, 16);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(seatCX - 26, headY + 24);
+      ctx.lineTo(seatCX + 20, headY + 100);
+      ctx.strokeStyle = `rgba(157,143,255,${0.4 * alpha})`;
+      ctx.stroke();
+    }
+
+    function drawTelemetry(c, score, iterN, curStage, alpha) {
+      const panelY = CH - 86;
+      ctx.strokeStyle = `rgba(255,255,255,${0.08 * alpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, panelY); ctx.lineTo(CW, panelY); ctx.stroke();
+
       ctx.textAlign = 'left';
-      ctx.fillText('(0,0)', 5, 12);
+      ctx.fillStyle = `rgba(157,143,255,${0.75 * alpha})`;
+      ctx.font = '8px JetBrains Mono, monospace';
+      ctx.fillText('PARAMETER SEARCH', 12, panelY + 16);
+
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.fillStyle = `rgba(210,208,220,${0.85 * alpha})`;
+      ctx.fillText(`HEAD_YAW ${c.headYaw.toFixed(1)}°   SEAT_TILT ${c.seatTilt.toFixed(1)}°`, 12, panelY + 34);
+      ctx.fillText(`OCC_X ${(c.occX * 100).toFixed(1)}cm   ITER ${iterN}`, 12, panelY + 50);
+
+      const barX = 12, barY = panelY + 62, barW = CW - 24, barH = 6;
+      ctx.fillStyle = `rgba(255,255,255,${0.08 * alpha})`;
+      ctx.fillRect(barX, barY, barW, barH);
+      ctx.fillStyle = curStage === 'found' ? `rgba(251,146,60,${0.95 * alpha})` : `rgba(0,229,255,${0.7 * alpha})`;
+      ctx.fillRect(barX, barY, barW * score, barH);
+
       ctx.textAlign = 'right';
-      ctx.fillText(`(${CW},${CH})`, CW - 4, CH - 5);
+      ctx.fillStyle = curStage === 'found' ? `rgba(251,146,60,${alpha})` : `rgba(0,229,255,${0.7 * alpha})`;
+      ctx.fillText(`FAILURE SCORE ${score.toFixed(2)}`, CW - 12, panelY + 74);
     }
 
-    function drawSkeleton(pts) {
-      /* Lines */
-      CONN.forEach(([a, b]) => {
-        ctx.beginPath();
-        ctx.moveTo(pts[a][0], pts[a][1]);
-        ctx.lineTo(pts[b][0], pts[b][1]);
-        const isLeg = (a >= 11 && b >= 11);
-        const isArm = ((a >= 5 && a <= 10) && b >= 5 && b <= 10 && !(a < 7 && b < 7));
-        ctx.strokeStyle = isLeg ? 'rgba(157,143,255,0.45)' : isArm ? 'rgba(0,229,255,0.55)' : 'rgba(0,229,255,0.3)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      });
-
-      /* Keypoints */
-      pts.forEach(([x, y], i) => {
-        /* Glow */
-        const grad = ctx.createRadialGradient(x, y, 0, x, y, 9);
-        grad.addColorStop(0, 'rgba(0,229,255,0.15)');
-        grad.addColorStop(1, 'rgba(0,229,255,0)');
-        ctx.beginPath();
-        ctx.arc(x, y, 9, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        /* Dot */
-        ctx.beginPath();
-        ctx.arc(x, y, i === 0 ? 3.5 : 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = i === 0 ? '#ffffff' : '#00e5ff';
-        ctx.fill();
-
-        /* Keypoint index */
-        ctx.fillStyle = 'rgba(0,229,255,0.35)';
-        ctx.font = `8px JetBrains Mono, monospace`;
-        ctx.textAlign = 'left';
-        ctx.fillText(i, x + 5, y - 3);
-      });
-    }
-
-    function drawOverlay() {
+    function drawOverlay(curStage) {
+      ctx.textAlign = 'left';
       ctx.fillStyle = 'rgba(0,229,255,0.25)';
       ctx.font = '9px JetBrains Mono, monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText(`FRAME  ${String(frame).padStart(4, '0')}`, 6, CH - 18);
-      ctx.fillText(`CONF   0.${96 + (frame % 3)}`, 6, CH - 7);
-      /* Top-right: mode */
-      const poseNames = ['STAND', 'RAISE', 'SURF '];
+      ctx.fillText('CABIN CAM · 120° FOV', 6, 14);
       ctx.textAlign = 'right';
-      ctx.fillText(`POSE  ${poseNames[poseIdx]}`, CW - 5, 12);
+      ctx.fillStyle = curStage === 'found' ? 'rgba(251,146,60,0.85)' : 'rgba(0,229,255,0.25)';
+      ctx.fillText(curStage === 'found' ? 'FAILURE CASE FOUND' : 'SEARCHING…', CW - 5, 14);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, CW, CH);
+      drawGrid();
+
+      const alpha = stage === 'reset' ? Math.max(0, 1 - stageElapsed / RESET_MS) : 1;
+
+      if (stage === 'found') {
+        const flashA = ((Math.sin(frame * 0.3) + 1) / 2) * 0.12;
+        ctx.fillStyle = `rgba(251,146,60,${flashA})`;
+        ctx.fillRect(0, 0, CW, CH);
+      }
+
+      drawCabin(cfg, alpha);
+      drawTelemetry(cfg, failScore, iter, stage, alpha);
+      drawOverlay(stage);
+
+      if (stage === 'found') {
+        ctx.textAlign = 'center';
+        ctx.fillStyle = `rgba(251,146,60,${0.9 * alpha})`;
+        ctx.font = '12px JetBrains Mono, monospace';
+        ctx.fillText('FAILURE CASE FOUND', CW / 2, CH * 0.42);
+      }
     }
 
     function tick(ts) {
       if (!prevTs) prevTs = ts;
       const dt = Math.min(ts - prevTs, 50);
       prevTs = ts;
-      elapsed += dt;
       frame++;
+      stageElapsed += dt;
 
-      let t = 0;
-      if (phase === 'hold') {
-        t = 0;
-        if (elapsed >= HOLD_MS) { phase = 'trans'; elapsed = 0; }
-      } else {
-        const raw = clamp(elapsed / TRANS_MS, 0, 1);
-        t = smoothstep(raw);
-        if (elapsed >= TRANS_MS) {
-          poseIdx = (poseIdx + 1) % POSES.length;
-          phase   = 'hold';
-          elapsed = 0;
-          t = 0;
+      if (stage === 'search') {
+        const progress = clamp(stageElapsed / SEARCH_MS, 0, 1);
+        if (stageElapsed - lastIterAt >= ITER_MS) {
+          lastIterAt = stageElapsed;
+          iter++;
+          const intensity = 0.15 + smoothstep(progress) * 0.85;
+          cfg = {
+            headYaw: Math.sin(iter * 0.7) * 22 * intensity,
+            seatTilt: Math.cos(iter * 0.5) * 10 * intensity,
+            occX: Math.sin(iter * 0.33) * 0.05 * intensity,
+            occY: Math.cos(iter * 0.41) * 0.025 * intensity,
+          };
+          failScore = clamp(0.12 + intensity * 0.82 + Math.sin(iter) * 0.025, 0, 0.97);
+        }
+        if (stageElapsed >= SEARCH_MS) {
+          stage = 'found'; stageElapsed = 0;
+          failScore = Math.max(failScore, 0.9);
+        }
+      } else if (stage === 'found') {
+        if (stageElapsed >= FOUND_MS) { stage = 'reset'; stageElapsed = 0; }
+      } else if (stage === 'reset') {
+        if (stageElapsed >= RESET_MS) {
+          stage = 'search'; stageElapsed = 0; iter = 0; lastIterAt = 0;
+          failScore = 0.12;
+          cfg = { headYaw: 0, seatTilt: 0, occX: 0, occY: 0 };
         }
       }
 
-      const from = POSES[poseIdx];
-      const to   = POSES[(poseIdx + 1) % POSES.length];
-      const pts  = from.map(([fx, fy], i) => [
-        lerp(fx, to[i][0], t) * CW,
-        lerp(fy, to[i][1], t) * CH,
-      ]);
-
-      ctx.clearRect(0, 0, CW, CH);
-      drawGrid();
-      drawSkeleton(pts);
-      drawOverlay();
-
+      draw();
       requestAnimationFrame(tick);
     }
 

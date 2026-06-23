@@ -320,8 +320,8 @@ section { padding: 5.5rem 0; }
 .sdot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--orange);
-  box-shadow: 0 0 7px var(--orange);
+  background: var(--green);
+  box-shadow: 0 0 7px var(--green);
   animation: blink 2.8s ease-in-out infinite;
   flex-shrink: 0;
 }
